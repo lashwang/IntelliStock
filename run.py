@@ -8,13 +8,26 @@ import pandas as pd
 
 
 class StockReport(object):
+
+    global writer
+    global new_stock_list
+
+    def read_baisc_stock_from_file(self):
+        df = pd.read_csv('data/all.csv', dtype={'code':'object'})
+        df.set_index('code')
+        return df
+
+    def __init__(self):
+        writer = pd.ExcelWriter('stock.xlsx', engine='xlsxwriter')
+        df = self.read_baisc_stock_from_file()
+        
+
+
+
+
     def get_new_stock_report(self):
         print "loading..."
-        df = ts.get_stock_basics()
-        writer = pd.ExcelWriter('stock.xlsx', engine='xlsxwriter')
-        df.to_excel(writer, sheet_name='Sheet1')
-        writer.save()
-        print "done"
+
 
 def main():
     fire.Fire(StockReport)
