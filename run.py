@@ -45,7 +45,7 @@ class StockReport(object):
             time = str(row.timeToMarket)
             timeToMarket = time[0:4] + '-' + time[4:6] + '-' + time[6:8]
             print timeToMarket
-            df = ts.get_h_data(code,timeToMarket)
+            df = ts.get_hist_data(code,timeToMarket)
             df.to_excel(self.writer, sheet_name=code,encoding='GBK')
             break
 
