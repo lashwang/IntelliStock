@@ -9,12 +9,12 @@ import pandas as pd
 
 class StockReport(object):
 
-    def read_baisc_stock_from_file(self):
+    def _read_baisc_stock_from_file(self):
         df = pd.read_csv('data/all.csv', dtype={'code':'object'})
         df.set_index('code')
         return df
 
-    def read_baisc_stock_from_network(self):
+    def _read_baisc_stock_from_network(self):
         df = ts.get_stock_basics()
         return df
         
@@ -22,7 +22,7 @@ class StockReport(object):
 
     def __init__(self):
         self.writer = pd.ExcelWriter('stock.xlsx', engine='xlsxwriter')
-        df = self.read_baisc_stock_from_file()
+        df = self._read_baisc_stock_from_file()
         self.new_stock_list = df.filter(items=['code','outstanding','totals','timeToMarket'])
 
 
