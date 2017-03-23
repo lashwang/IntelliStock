@@ -18,6 +18,10 @@ class StockReport(object):
         df = ts.get_stock_basics()
         return df
         
+    def _get_time_str(self,time):
+        time = str(time)
+        timeToMarket = time[0:4] + '-' + time[4:6] + '-' + time[6:8]
+        return timeToMarket
 
 
     def __init__(self):
@@ -42,9 +46,7 @@ class StockReport(object):
 
         for index, row in df.iterrows():
             code = row.code
-            time = str(row.timeToMarket)
-            timeToMarket = time[0:4] + '-' + time[4:6] + '-' + time[6:8]
-            print timeToMarket
+            timeToMarket = self._get_time_str(row.timeToMarket)
             df = ts.get_hist_data(code,timeToMarket)
             df.to_excel(self.writer, sheet_name=code,encoding='GBK')
             break
