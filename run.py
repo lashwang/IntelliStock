@@ -40,7 +40,14 @@ class StockReport(object):
         df = self.new_stock_list[self.new_stock_list.timeToMarket > 20160801]
         df.to_excel(self.writer, sheet_name=u'次新股',encoding='GBK')
 
-
+        for index, row in df.iterrows():
+            code = row.code
+            time = str(row.timeToMarket)
+            timeToMarket = time[0:4] + '-' + time[4:6] + '-' + time[6:8]
+            print timeToMarket
+            df = ts.get_h_data(code,timeToMarket)
+            df.to_excel(self.writer, sheet_name=code,encoding='GBK')
+            break
 
 
 
