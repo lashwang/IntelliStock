@@ -47,7 +47,7 @@ class StockReport(object):
         for index, row in df.iterrows():
             code = row.code
             timeToMarket = self._get_time_str(row.timeToMarket)
-            df = ts.get_hist_data(code,timeToMarket)
+            df = ts.get_k_data(code)
             df.to_excel(self.writer, sheet_name=code,encoding='GBK')
             break
 
