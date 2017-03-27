@@ -7,6 +7,9 @@ import tushare as ts
 import pandas as pd
 import mail as mail
 
+
+
+
 class StockReport(object):
 
     def _read_baisc_stock_from_file(self):

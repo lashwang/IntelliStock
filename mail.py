@@ -4,28 +4,28 @@
 import smtplib
 from email.mime.text import MIMEText
 from email.header import Header
+import traceback
+import configuration as cf
 
-mail_account = 'lashwang@outlook.com'
-mail_passwd = 'meimei1985'
-user_email = '171629646@qq.com'
-mail_postfix = 'outlook.com'
+mail_config = cf.mail_outlook
+mail_config_table = cf.MAIL_COFIG_TABLE[mail_config]
 
 class Mail:
     def __init__(self):
-        self.smtp_server = 'smtp-mail.outlook.com:587'
         self.subject = 'Email authentication from AJ Kipper'
-        self.form_msg = "This is a mailbox validation from" + ""
+        self.form_msg = "This is a mailbox validation from "
         self.content = 'Hi,thank you for registering the chat room created by AJ Kipper!'
-        self.mail_account = mail_account
-        self.mail_passwd = mail_passwd
-        self.user_email = user_email
+        self.smtp_server = mail_config_table[cf.smtp_server]
+        self.mail_account = mail_config_table[cf.mail_account]
+        self.mail_passwd = mail_config_table[cf.mail_passwd]
+        self.user_email = mail_config_table[cf.user_email]
     def send_email(self):
         msg = MIMEText(self.content, _subtype='plain', _charset='utf-8')
         msg['Subject'] = self.subject
         msg['From'] = self.form_msg
         msg['To'] = ";".join(self.user_email)
         try:
-            server = smtplib.SMTP()
+            server = smtplib.SMTP(self.smtp_server)
             # 服务器连接
             server.connect(self.smtp_server)
             # 返回服务器特性
@@ -40,7 +40,8 @@ class Mail:
             server.close()
             return True
         except Exception, error:
-            print str(error)
+            traceback.print_exc()
+            print Exception,str(error)
             return False
 
 
