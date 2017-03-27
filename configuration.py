@@ -10,6 +10,8 @@ smtp_server = 'smtp_server'
 mail_qq = 'qq'
 mail_outlook = 'outlook'
 mail_sina = 'sina'
+mail_zlfm = 'zlfm'
+
 
 MAIL_CONFIG_QQ = {
     mail_account:'171629646@qq.com',
@@ -30,10 +32,17 @@ MAIL_CONFIG_SINA = {
     smtp_server:'smtp.sina.com'
 }
 
+MAIL_CONFIG_ZLFM = {
+    mail_account:'stock@zl-fm.com',
+    mail_passwd:'992154',
+    smtp_server:'smtp.ym.163.com'
+}
+
 
 
 MAIL_COFIG_TABLE = {
     mail_qq:MAIL_CONFIG_QQ,
     mail_outlook:MAIL_CONFIG_OUTLOOK,
-    mail_sina:MAIL_CONFIG_SINA
+    mail_sina:MAIL_CONFIG_SINA,
+    mail_zlfm:MAIL_CONFIG_ZLFM,
 }
