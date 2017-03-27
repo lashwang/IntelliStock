@@ -5,7 +5,7 @@
 import fire
 import tushare as ts
 import pandas as pd
-
+import mail as mail
 
 class StockReport(object):
 
@@ -32,6 +32,9 @@ class StockReport(object):
 
 
 
+    def send_mail(self):
+        mail_ = mail.Mail()
+        mail_.send_email()
 
 
 
