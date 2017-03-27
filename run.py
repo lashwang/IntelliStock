@@ -6,7 +6,7 @@ import fire
 import tushare as ts
 import pandas as pd
 import mail as mail
-
+import configuration as cf
 
 
 
@@ -28,7 +28,7 @@ class StockReport(object):
 
 
     def __init__(self):
-        self.writer = pd.ExcelWriter('stock.xlsx', engine='xlsxwriter')
+        self.writer = pd.ExcelWriter(cf.EXPORT_XLS_FILE_NAME, engine='xlsxwriter')
         df = self._read_baisc_stock_from_file()
         self.new_stock_list = df.filter(items=['code','outstanding','totals','timeToMarket'])
 
@@ -37,7 +37,7 @@ class StockReport(object):
 
     def send_mail(self):
         mail_ = mail.Mail()
-        mail_.send_email()
+        mail_.send_email([cf.EXPORT_XLS_FILE_NAME])
 
 
 
@@ -57,9 +57,10 @@ class StockReport(object):
             df.to_excel(self.writer, sheet_name=code,encoding='GBK')
             break
 
-
-
         self.writer.save()
+
+        self.send_mail()
+
 
 def main():
     fire.Fire(StockReport)

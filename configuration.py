@@ -2,6 +2,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import dateTimeUtil
+
 mail_account = 'mail_account'
 mail_passwd = 'mail_passwd'
 smtp_server = 'smtp_server'
@@ -41,8 +43,11 @@ MAIL_CONFIG_ZLFM = {
 
 
 MAIL_COFIG_TABLE = {
-    mail_qq:MAIL_CONFIG_QQ,
-    mail_outlook:MAIL_CONFIG_OUTLOOK,
-    mail_sina:MAIL_CONFIG_SINA,
-    mail_zlfm:MAIL_CONFIG_ZLFM,
+    mail_qq: MAIL_CONFIG_QQ,
+    mail_outlook: MAIL_CONFIG_OUTLOOK,
+    mail_sina: MAIL_CONFIG_SINA,
+    mail_zlfm: MAIL_CONFIG_ZLFM,
 }
+
+
+EXPORT_XLS_FILE_NAME = 'stock_export_' + dateTimeUtil.now_date() + '.xlsx'
