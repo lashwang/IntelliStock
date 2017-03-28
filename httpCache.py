@@ -9,7 +9,7 @@ except ImportError:
 import base64
 import json
 import configuration as cf
-
+from bson import json_util
 
 
 class HttpCache:
@@ -36,7 +36,7 @@ class HttpCache:
             request = Request(url_)
             data = urlopen(request, timeout=10).read()
             self._save_to_cache(data,url_)
-            self.index[self._url_to_filename(url_)] = datetime.datetime.now().strftime("%y-%m-%d %H:%M:%S")
+            self.index[self._url_to_filename(url_)] = datetime.datetime.now()
             self._save_index_file()
         except Exception, error:
             print str(error)
@@ -56,11 +56,12 @@ class HttpCache:
         data = None
 
         if self.index.has_key(filename):
-            try:
-                with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
-                    data = f.read()
-            except Exception,error:
-                print str(error)
+            if self._is_cache_valid(url_):
+                try:
+                    with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
+                        data = f.read()
+                except Exception,error:
+                    print str(error)
 
         return data
 
@@ -72,7 +73,7 @@ class HttpCache:
     def _load_index_file(self):
         try:
             with open(cf.CACHE_INDEX_FILE,'r') as data_file:
-                index = json.load(data_file)
+                index = json.load(data_file,object_hook=json_util.object_hook)
         except Exception,error:
             index = dict()
             print str(error)
@@ -82,8 +83,23 @@ class HttpCache:
     def _save_index_file(self):
         try:
             with open(cf.CACHE_INDEX_FILE,'w') as data_file:
-                json.dump(self.index,data_file,indent=4, sort_keys=True)
+                json.dump(self.index,data_file,indent=4, sort_keys=True,default=json_util.default)
 
         except Exception, error:
             print str(error)
+
+    def _is_cache_valid(self,url_):
+        now = datetime.datetime.now()
+        filename = self._url_to_filename(url_)
+        last_time = self.index[filename] + datetime.timedelta(minutes=cf.CACHE_TIME_OUT_MIN)
+        last_time = last_time.replace(tzinfo=None)
+
+        if now > last_time:
+            return False
+        else:
+            return True
+
+
+
+
 

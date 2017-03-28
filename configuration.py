@@ -65,5 +65,5 @@ REQUEST_DELAY = 2
 # cache time out, min
 CACHE_FOLDER = 'cache'
 CACHE_INDEX_FILE = os.path.join(CACHE_FOLDER, 'index.json')
-CACHE_TIME_OUT = 60
+CACHE_TIME_OUT_MIN = 60
 
