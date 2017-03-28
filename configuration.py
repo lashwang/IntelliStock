@@ -3,6 +3,8 @@
 # -*- coding: utf-8 -*-
 
 import dateTimeUtil
+import os
+
 
 mail_account = 'mail_account'
 mail_passwd = 'mail_passwd'
@@ -49,5 +51,6 @@ MAIL_COFIG_TABLE = {
     mail_zlfm: MAIL_CONFIG_ZLFM,
 }
 
-
+EXPORT_PATH_DIR = 'output'
 EXPORT_XLS_FILE_NAME = 'stock_export_' + dateTimeUtil.now_date() + '.xlsx'
+EXPORT_XLS_FILE_PATH = os.path.join(EXPORT_PATH_DIR,EXPORT_XLS_FILE_NAME)
