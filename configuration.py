@@ -61,3 +61,9 @@ QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
 QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
 REQUEST_DELAY = 2
+
+# cache time out, min
+CACHE_FOLDER = 'cache'
+CACHE_INDEX_FILE = os.path.join(CACHE_FOLDER, 'index.json')
+CACHE_TIME_OUT = 60
+

@@ -12,13 +12,7 @@ import json
 import lxml.html
 from lxml import etree
 import time
-
-
-try:
-    from urllib.request import urlopen, Request
-except ImportError:
-    from urllib2 import urlopen, Request
-
+import httpCache as cache
 
 class StockReport(object):
 
@@ -49,7 +43,7 @@ class StockReport(object):
             print str(error)
 
         self.writer = pd.ExcelWriter(cf.EXPORT_XLS_FILE_PATH, engine='xlsxwriter')
-
+        self.cache_engine = cache.HttpCache()
 
     def send_mail(self,files=None):
         mail_ = mail.Mail()
@@ -60,23 +54,17 @@ class StockReport(object):
         return cf.QQ_XINGU_URL.format(_page,_page_size)
 
     def _get_xingu_list(self,_page = 1):
-        try:
-            url = self._get_xingu_url(_page)
-            print url
-            request = Request(url)
-            lines = urlopen(request, timeout=10).read()
-            if len(lines) < 100:  # no data
-                return None
-            lines = lines.split('=')[1]
-            js = json.loads(lines)
-            print js
-            data = pd.DataFrame(js['data']['data'])
-            totalPages = js['data']['totalPages']
-            return {'totalPages':totalPages,'data':data}
-
-        except Exception, error:
-            print str(error)
+        url = self._get_xingu_url(_page)
+        lines = self.cache_engine.Request(url)
+        if len(lines) < 100:  # no data
             return None
+        lines = lines.split('=')[1]
+        js = json.loads(lines)
+        print js
+        data = pd.DataFrame(js['data']['data'])
+        totalPages = js['data']['totalPages']
+        return {'totalPages':totalPages,'data':data}
+
 
 
     def get_new_stock_report(self):
