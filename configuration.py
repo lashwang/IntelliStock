@@ -59,3 +59,5 @@ QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
                'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
 
 QQ_XINGU_DEFAULT_PAGE_SIZE = 100
+
+REQUEST_DELAY = 2

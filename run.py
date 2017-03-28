@@ -11,6 +11,7 @@ import os
 import json
 import lxml.html
 from lxml import etree
+import time
 
 
 try:
@@ -58,35 +59,65 @@ class StockReport(object):
     def _get_xingu_url(self,_page = 1,_page_size = cf.QQ_XINGU_DEFAULT_PAGE_SIZE):
         return cf.QQ_XINGU_URL.format(_page,_page_size)
 
-    def _get_xingu_list(self):
-        url = self._get_xingu_url(1)
-        print url
-        request = Request(url)
-        lines = urlopen(request, timeout=10).read()
-        if len(lines) < 100:  # no data
+    def _get_xingu_list(self,_page = 1):
+        try:
+            url = self._get_xingu_url(_page)
+            print url
+            request = Request(url)
+            lines = urlopen(request, timeout=10).read()
+            if len(lines) < 100:  # no data
+                return None
+            lines = lines.split('=')[1]
+            js = json.loads(lines)
+            print js
+            data = pd.DataFrame(js['data']['data'])
+            totalPages = js['data']['totalPages']
+            return {'totalPages':totalPages,'data':data}
+
+        except Exception, error:
+            print str(error)
             return None
-        lines = lines.split('=')[1]
-        print lines
-        js = json.loads(lines)
-        print js
+
 
     def get_new_stock_report(self):
-        # 未上市新股
-        self.stokc_untrade = self.new_stock_list[self.new_stock_list.timeToMarket == 0]
-        self.stokc_untrade.to_excel(self.writer, sheet_name=u'未上市新股',encoding='GBK')
+        pageIndex = 1
+        totalPages = 0
+        data = pd.DataFrame()
+        while True:
+            ret = self._get_xingu_list(pageIndex)
+            if pageIndex == 1:
+                totalPages = ret['totalPages']
+                print totalPages
+            data = data.append(ret['data'])
+            if pageIndex >= totalPages:
+                print 'get all pages, page index:{}, total pages:{}'.format(pageIndex,totalPages)
+                break
+            else:
+                pageIndex = pageIndex+1
+                time.sleep(cf.REQUEST_DELAY)
 
-        # 筛选最近一年上市的新股
-        df = self.new_stock_list[self.new_stock_list.timeToMarket > 20160801]
-        df.to_excel(self.writer, sheet_name=u'次新股',encoding='GBK')
-
-        for index, row in df.iterrows():
-            code = row.code
-            timeToMarket = self._get_time_str(row.timeToMarket)
-            df = ts.get_k_data(code)
-            df.to_excel(self.writer, sheet_name=code,encoding='GBK')
-            break
-
+        data.to_excel(self.writer, sheet_name=u'次新股')
         self.writer.save()
+
+
+
+
+        # # 未上市新股
+        # self.stokc_untrade = self.new_stock_list[self.new_stock_list.timeToMarket == 0]
+        # self.stokc_untrade.to_excel(self.writer, sheet_name=u'未上市新股',encoding='GBK')
+        #
+        # # 筛选最近一年上市的新股
+        # df = self.new_stock_list[self.new_stock_list.timeToMarket > 20160801]
+        # df.to_excel(self.writer, sheet_name=u'次新股',encoding='GBK')
+        #
+        # for index, row in df.iterrows():
+        #     code = row.code
+        #     timeToMarket = self._get_time_str(row.timeToMarket)
+        #     df = ts.get_k_data(code)
+        #     df.to_excel(self.writer, sheet_name=code,encoding='GBK')
+        #     break
+        #
+        # self.writer.save()
 
         return os.path.abspath(cf.EXPORT_XLS_FILE_PATH)
 
