@@ -8,11 +8,20 @@ import pandas as pd
 import mail as mail
 import configuration as cf
 import os
+import json
+import lxml.html
+from lxml import etree
+
+
+try:
+    from urllib.request import urlopen, Request
+except ImportError:
+    from urllib2 import urlopen, Request
 
 
 class StockReport(object):
 
-    def _read_baisc_stock_from_file(self):
+    def _read_basic_stock_from_file(self):
         df = pd.read_csv('data/all.csv', dtype={'code':'object'})
         df.set_index('code')
         return df
@@ -27,6 +36,11 @@ class StockReport(object):
         return timeToMarket
 
 
+    def _get_basic_stock_list(self):
+        df = self._read_basic_stock_from_file()
+        self.new_stock_list = df.filter(items=['code','outstanding','totals','timeToMarket'])
+
+
     def __init__(self):
         try:
             os.mkdir(cf.EXPORT_PATH_DIR)
@@ -34,10 +48,6 @@ class StockReport(object):
             print str(error)
 
         self.writer = pd.ExcelWriter(cf.EXPORT_XLS_FILE_PATH, engine='xlsxwriter')
-        df = self._read_baisc_stock_from_file()
-        self.new_stock_list = df.filter(items=['code','outstanding','totals','timeToMarket'])
-
-
 
 
     def send_mail(self,files=None):
@@ -45,6 +55,20 @@ class StockReport(object):
         mail_.send_email(files)
 
 
+    def _get_xingu_url(self,_page = 1,_page_size = cf.QQ_XINGU_DEFAULT_PAGE_SIZE):
+        return cf.QQ_XINGU_URL.format(_page,_page_size)
+
+    def _get_xingu_list(self):
+        url = self._get_xingu_url(1)
+        print url
+        request = Request(url)
+        lines = urlopen(request, timeout=10).read()
+        if len(lines) < 100:  # no data
+            return None
+        lines = lines.split('=')[1]
+        print lines
+        js = json.loads(lines)
+        print js
 
     def get_new_stock_report(self):
         # 未上市新股
@@ -67,8 +91,8 @@ class StockReport(object):
         return os.path.abspath(cf.EXPORT_XLS_FILE_PATH)
 
     def run(self):
-        export_xls = self.get_new_stock_report()
-        f = [export_xls]
+        export_xls_path = self.get_new_stock_report()
+        f = [export_xls_path]
         self.send_mail(f)
 
 def main():

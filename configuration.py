@@ -54,3 +54,8 @@ MAIL_COFIG_TABLE = {
 EXPORT_PATH_DIR = 'output'
 EXPORT_XLS_FILE_NAME = 'stock_export_' + dateTimeUtil.now_date() + '.xlsx'
 EXPORT_XLS_FILE_PATH = os.path.join(EXPORT_PATH_DIR,EXPORT_XLS_FILE_NAME)
+
+QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
+               'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
+
+QQ_XINGU_DEFAULT_PAGE_SIZE = 100
