@@ -2,7 +2,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import dateTimeUtil
+import DateTimeUtil
 import os
 
 
@@ -52,7 +52,7 @@ MAIL_COFIG_TABLE = {
 }
 
 EXPORT_PATH_DIR = 'output'
-EXPORT_XLS_FILE_NAME = 'stock_export_' + dateTimeUtil.now_date() + '.xlsx'
+EXPORT_XLS_FILE_NAME = 'stock_export_' + DateTimeUtil.now_date() + '.xlsx'
 EXPORT_XLS_FILE_PATH = os.path.join(EXPORT_PATH_DIR,EXPORT_XLS_FILE_NAME)
 
 QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \

@@ -11,8 +11,8 @@ from email.utils import COMMASPACE, formatdate
 
 from email.header import Header
 import traceback
-import configuration as cf
-import dateTimeUtil
+import Configuration as cf
+import DateTimeUtil
 
 
 
@@ -23,8 +23,8 @@ user_email = 'lashwang@outlook.com'
 
 class Mail:
     def __init__(self):
-        self.subject = 'Stock report on ' + dateTimeUtil.now_datetime()
-        self.content = 'Stock report on ' + dateTimeUtil.now_datetime()
+        self.subject = 'Stock report on ' + DateTimeUtil.now_datetime()
+        self.content = 'Stock report on ' + DateTimeUtil.now_datetime()
         self.smtp_server = mail_config_table[cf.smtp_server]
         self.mail_account = mail_config_table[cf.mail_account]
         self.mail_passwd = mail_config_table[cf.mail_passwd]

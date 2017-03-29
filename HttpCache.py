@@ -8,7 +8,7 @@ except ImportError:
     from urllib2 import urlopen, Request
 import base64
 import json
-import configuration as cf
+import Configuration as cf
 from bson import json_util
 import sqlite3
 
