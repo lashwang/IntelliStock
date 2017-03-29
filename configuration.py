@@ -62,8 +62,14 @@ QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
 REQUEST_DELAY = 2
 
+GLOBAL_DB_FOLDER = 'db'
+
 # cache time out, min
 CACHE_FOLDER = 'cache'
 CACHE_INDEX_FILE = os.path.join(CACHE_FOLDER, 'index.json')
 CACHE_TIME_OUT_MIN = 60
+
+CACHE_LOCK_FILE = 'index.lock'
+
+CACHE_DB_FILE = 'cache.db'
 

@@ -4,3 +4,4 @@ lxml
 tushare
 xlsxwriter
 pymongo
+lockfile

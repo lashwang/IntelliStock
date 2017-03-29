@@ -14,6 +14,8 @@ from lxml import etree
 import time
 import httpCache as cache
 
+
+
 class StockReport(object):
 
     def _read_basic_stock_from_file(self):
