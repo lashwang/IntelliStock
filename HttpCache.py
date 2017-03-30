@@ -87,7 +87,7 @@ class HttpCache:
         except Exception, error:
             print str(error)
 
-        db.Database.http_cache_index_insert(url_)
+        db.Database.http_cache_index_insert(HttpCache.HTTP_CACHE_INDEX_TABLE,url_)
 
 
     def _is_cache_valid(self,url_):

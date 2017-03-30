@@ -13,10 +13,12 @@ class Database:
 
     @classmethod
     def http_cache_index_insert(cls,table_='http_cache',url_ = None):
+        if url_ is None:
+            raise RuntimeError
+
         table = Database.db[table_]
         table.insert(dict(url=url_,time=datetime.datetime.now()))
 
-        print Database.db[table_].all()
 
 
 
