@@ -5,3 +5,4 @@ tushare
 xlsxwriter
 pymongo
 lockfile
+dataset

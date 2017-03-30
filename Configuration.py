@@ -62,7 +62,6 @@ QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
 REQUEST_DELAY = 2
 
-GLOBAL_DB_FOLDER = 'db'
 
 # cache time out, min
 CACHE_FOLDER = 'cache'
@@ -72,4 +71,9 @@ CACHE_TIME_OUT_MIN = 60
 CACHE_LOCK_FILE = 'index.lock'
 
 CACHE_DB_FILE = 'cache.db'
+
+
+# db config
+STOCK_DB_FOLDER = 'db'
+STOCK_DB_PATH = os.path.join(STOCK_DB_FOLDER,'stock.db')
 

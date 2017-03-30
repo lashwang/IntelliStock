@@ -10,16 +10,15 @@ import base64
 import json
 import Configuration as cf
 from bson import json_util
-import sqlite3
+import FileUtils
+import DataBase as db
 
 class HttpCache:
 
-    def __init__(self):
-        try:
-            os.mkdir(cf.CACHE_FOLDER)
-        except Exception, error:
-            print str(error)
+    HTTP_CACHE_INDEX_TABLE = 'cache_index'
 
+    def __init__(self):
+        FileUtils.mkdir(cf.CACHE_FOLDER)
         self.index = self._load_index_file()
 
     def Request(self,url_,from_cache_ = True):
@@ -35,7 +34,7 @@ class HttpCache:
             data = urlopen(request, timeout=10).read()
             self._save_to_cache(data,url_)
             self.index[self._url_to_filename(url_)] = datetime.datetime.now()
-            self._save_index_file()
+            self._save_index_file(url_)
         except Exception, error:
             print str(error)
             return None
@@ -48,6 +47,8 @@ class HttpCache:
 
         with open(cache_path, 'wb') as f:
             f.write(data_)
+
+
 
     def _load_from_cache(self,url_):
         filename = self._url_to_filename(url_)
@@ -78,13 +79,16 @@ class HttpCache:
 
         return index
 
-    def _save_index_file(self):
+    def _save_index_file(self,url_):
         try:
             with open(cf.CACHE_INDEX_FILE,'w') as data_file:
                 json.dump(self.index,data_file,indent=4, sort_keys=True,default=json_util.default)
 
         except Exception, error:
             print str(error)
+
+        db.Database.http_cache_index_insert(url_)
+
 
     def _is_cache_valid(self,url_):
         now = datetime.datetime.now()
