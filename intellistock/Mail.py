@@ -8,16 +8,23 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
 from os.path import basename
+import logging
 
 import Configuration as cf
 import DateTimeUtil
+
+
+
+logger = logging.getLogger(__name__)
+
+
 
 mail_config = cf.mail_zlfm
 mail_config_table = cf.MAIL_COFIG_TABLE[mail_config]
 user_email = 'lashwang@outlook.com'
 
 
-class Mail:
+class Mail(object):
     def __init__(self):
         self.subject = 'Stock report on ' + DateTimeUtil.now_datetime()
         self.content = 'Stock report on ' + DateTimeUtil.now_datetime()
@@ -54,8 +61,7 @@ class Mail:
             server.close()
             return True
         except Exception, error:
-            traceback.print_exc()
-            print Exception,str(error)
+            logger.error(str(error))
             return False
 
 

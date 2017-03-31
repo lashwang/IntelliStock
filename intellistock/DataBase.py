@@ -5,9 +5,12 @@ import dataset
 
 import Configuration as cf
 import FileUtils
+import logging
+logger = logging.getLogger(__name__)
 
 
-class DataBase:
+
+class DataBase(object):
     FileUtils.mkdir(cf.STOCK_DB_FOLDER)
     db = dataset.connect('sqlite:///{}'.format(cf.STOCK_DB_PATH))
 

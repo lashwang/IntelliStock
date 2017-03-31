@@ -11,6 +11,10 @@ import base64
 import Configuration as cf
 import FileUtils
 from DataBase import DataBase
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 
@@ -22,14 +26,14 @@ class HttpCache:
         FileUtils.mkdir(cf.CACHE_FOLDER)
 
     def Request(self,url_,from_cache_ = True):
-        print 'HttpCache, url is ' + url_
+        logger.debug('HttpCache, url is ' + url_)
         if from_cache_:
             data = self._load_from_cache(url_)
         else:
             data = None
 
         if data is not None:
-            print 'load from cache'
+            logger.debug('load from cache')
             return data
 
         try:
@@ -38,14 +42,14 @@ class HttpCache:
             self._save_to_cache(data,url_)
             self._save_index_file(url_)
         except Exception, error:
-            print str(error)
+            logger.error(str(error))
             return None
 
         return data
 
     def _save_to_cache(self,data_,url_):
         cache_path = os.path.join(cf.CACHE_FOLDER,self._url_to_filename(url_))
-        print cache_path
+        logger.debug(cache_path)
 
         with open(cache_path, 'wb') as f:
             f.write(data_)
@@ -56,7 +60,7 @@ class HttpCache:
         filename = self._url_to_filename(url_)
         data = None
         index = self._load_index_file(url_)
-        print index
+        logger.debug(index)
 
         if index:
             if self._is_cache_valid(index):
@@ -64,7 +68,7 @@ class HttpCache:
                     with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
                         data = f.read()
                 except Exception,error:
-                    print str(error)
+                    logger.error(str(error))
                     return data
 
         return data
@@ -72,7 +76,7 @@ class HttpCache:
     def _is_cache_valid(self,index_):
         time = index_['time'] + datetime.timedelta(minutes=cf.CACHE_TIME_OUT_MIN)
         now = datetime.datetime.now()
-        print time,now
+        logger.debug(str(time))
 
         return (now < time)
 
@@ -104,7 +108,7 @@ class HttpCache:
                 table = db[HttpCache.HTTP_CACHE_INDEX_TABLE]
                 table.upsert(dict(url=url_,time=datetime.datetime.now()),['url'])
         except Exception,error:
-            print str(error)
+            logger.error(str(error))
 
 
 
