@@ -7,11 +7,11 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request
 import base64
-import json
 import Configuration as cf
-from bson import json_util
 import FileUtils
-import DataBase as db
+from DataBase import Database
+
+
 
 class HttpCache:
 
@@ -19,11 +19,13 @@ class HttpCache:
 
     def __init__(self):
         FileUtils.mkdir(cf.CACHE_FOLDER)
-        self.index = self._load_index_file()
 
     def Request(self,url_,from_cache_ = True):
         print 'HttpCache, url is ' + url_
-        data = self._load_from_cache(url_)
+        if from_cache_:
+            data = self._load_from_cache(url_)
+        else:
+            data = None
 
         if data is not None:
             print 'load from cache'
@@ -33,7 +35,6 @@ class HttpCache:
             request = Request(url_)
             data = urlopen(request, timeout=10).read()
             self._save_to_cache(data,url_)
-            self.index[self._url_to_filename(url_)] = datetime.datetime.now()
             self._save_index_file(url_)
         except Exception, error:
             print str(error)
@@ -53,55 +54,56 @@ class HttpCache:
     def _load_from_cache(self,url_):
         filename = self._url_to_filename(url_)
         data = None
+        index = self._load_index_file(url_)
+        print index
 
-        if self.index.has_key(filename):
-            if self._is_cache_valid(url_):
+        if index:
+            if self._is_cache_valid(index):
                 try:
                     with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
                         data = f.read()
                 except Exception,error:
                     print str(error)
+                    return data
 
         return data
+
+    def _is_cache_valid(self,index_):
+        time = index_['time'] + datetime.timedelta(minutes=cf.CACHE_TIME_OUT_MIN)
+        now = datetime.datetime.now()
+        print time,now
+
+        return (now < time)
 
 
     def _url_to_filename(self,url_):
         return base64.b32encode(url_)
 
+    def _save_index_file(self,url_):
+        self.http_cache_index_upsert(url_)
 
-    def _load_index_file(self):
-        try:
-            with open(cf.CACHE_INDEX_FILE,'r') as data_file:
-                index = json.load(data_file,object_hook=json_util.object_hook)
-        except Exception,error:
-            index = dict()
-            print str(error)
+
+    def _load_index_file(self,url_):
+        if url_ is None:
+            raise RuntimeError
+        db = Database.get_db_connection()
+
+        index = db[HttpCache.HTTP_CACHE_INDEX_TABLE].find_one(url=url_)
 
         return index
 
-    def _save_index_file(self,url_):
+
+
+    def http_cache_index_upsert(self,url_ = None):
+        if url_ is None:
+            raise RuntimeError
+        db = Database.get_db_connection()
         try:
-            with open(cf.CACHE_INDEX_FILE,'w') as data_file:
-                json.dump(self.index,data_file,indent=4, sort_keys=True,default=json_util.default)
-
-        except Exception, error:
+            with db:
+                table = db[HttpCache.HTTP_CACHE_INDEX_TABLE]
+                table.upsert(dict(url=url_,time=datetime.datetime.now()),['url'])
+        except Exception,error:
             print str(error)
-
-        db.Database.http_cache_index_insert(HttpCache.HTTP_CACHE_INDEX_TABLE,url_)
-
-
-    def _is_cache_valid(self,url_):
-        now = datetime.datetime.now()
-        filename = self._url_to_filename(url_)
-        last_time = self.index[filename] + datetime.timedelta(minutes=cf.CACHE_TIME_OUT_MIN)
-        last_time = last_time.replace(tzinfo=None)
-
-        if now > last_time:
-            return False
-        else:
-            return True
-
-
 
 
 

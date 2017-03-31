@@ -12,12 +12,9 @@ class Database:
     db = dataset.connect('sqlite:///{}'.format(cf.STOCK_DB_PATH))
 
     @classmethod
-    def http_cache_index_insert(cls,table_='http_cache',url_ = None):
-        if url_ is None:
-            raise RuntimeError
+    def get_db_connection(cls):
+        return Database.db
 
-        table = Database.db[table_]
-        table.insert(dict(url=url_,time=datetime.datetime.now()))
 
 
 
