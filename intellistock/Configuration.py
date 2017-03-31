@@ -2,9 +2,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import DateTimeUtil
 import os
 
+import DateTimeUtil
 
 mail_account = 'mail_account'
 mail_passwd = 'mail_passwd'
@@ -64,8 +64,7 @@ REQUEST_DELAY = 2
 
 
 # cache time out, min
-CACHE_FOLDER = 'cache'
-CACHE_INDEX_FILE = os.path.join(CACHE_FOLDER, 'index.json')
+CACHE_FOLDER = os.path.join(EXPORT_PATH_DIR,'cache')
 CACHE_TIME_OUT_MIN = 60
 
 CACHE_LOCK_FILE = 'index.lock'
@@ -74,6 +73,6 @@ CACHE_DB_FILE = 'cache.db'
 
 
 # db config
-STOCK_DB_FOLDER = 'db'
+STOCK_DB_FOLDER = os.path.join(EXPORT_PATH_DIR,'db')
 STOCK_DB_PATH = os.path.join(STOCK_DB_FOLDER,'stock.db')
 

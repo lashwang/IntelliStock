@@ -1,7 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import os
 import datetime
+import os
+
 try:
     from urllib.request import urlopen, Request
 except ImportError:
@@ -9,7 +10,7 @@ except ImportError:
 import base64
 import Configuration as cf
 import FileUtils
-from DataBase import Database
+from DataBase import DataBase
 
 
 
@@ -86,7 +87,7 @@ class HttpCache:
     def _load_index_file(self,url_):
         if url_ is None:
             raise RuntimeError
-        db = Database.get_db_connection()
+        db = DataBase.get_db_connection()
 
         index = db[HttpCache.HTTP_CACHE_INDEX_TABLE].find_one(url=url_)
 
@@ -97,7 +98,7 @@ class HttpCache:
     def http_cache_index_upsert(self,url_ = None):
         if url_ is None:
             raise RuntimeError
-        db = Database.get_db_connection()
+        db = DataBase.get_db_connection()
         try:
             with db:
                 table = db[HttpCache.HTTP_CACHE_INDEX_TABLE]

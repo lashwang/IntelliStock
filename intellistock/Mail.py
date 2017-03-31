@@ -2,19 +2,15 @@
 # -*- coding: utf-8 -*-
 
 import smtplib
-from email.mime.text import MIMEText
-from os.path import basename
+import traceback
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
-from email.utils import COMMASPACE, formatdate
+from email.mime.text import MIMEText
+from email.utils import formatdate
+from os.path import basename
 
-
-from email.header import Header
-import traceback
 import Configuration as cf
 import DateTimeUtil
-
-
 
 mail_config = cf.mail_zlfm
 mail_config_table = cf.MAIL_COFIG_TABLE[mail_config]
