@@ -3,15 +3,15 @@
 
 import dataset
 
-import Configuration as cf
-import FileUtils
+import config as cf
+import file_utils
 import logging
 logger = logging.getLogger(__name__)
 
 
 
 class DataBase(object):
-    FileUtils.mkdir(cf.STOCK_DB_FOLDER)
+    file_utils.mkdir(cf.STOCK_DB_FOLDER)
     db = dataset.connect('sqlite:///{}'.format(cf.STOCK_DB_PATH))
 
     @classmethod

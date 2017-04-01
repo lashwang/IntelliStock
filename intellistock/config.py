@@ -4,7 +4,7 @@
 
 import os
 
-import DateTimeUtil
+import datatime
 
 mail_account = 'mail_account'
 mail_passwd = 'mail_passwd'
@@ -52,7 +52,7 @@ MAIL_COFIG_TABLE = {
 }
 
 EXPORT_PATH_DIR = 'output'
-EXPORT_XLS_FILE_NAME = 'stock_export_' + DateTimeUtil.now_date() + '.xlsx'
+EXPORT_XLS_FILE_NAME = 'stock_export_' + datatime.now_date() + '.xlsx'
 EXPORT_XLS_FILE_PATH = os.path.join(EXPORT_PATH_DIR,EXPORT_XLS_FILE_NAME)
 
 QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
@@ -60,7 +60,7 @@ QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
 
 QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
-REQUEST_DELAY = 2
+REQUEST_DELAY = 1
 
 
 # cache time out, min

@@ -10,8 +10,8 @@ from email.utils import formatdate
 from os.path import basename
 import logging
 
-import Configuration as cf
-import DateTimeUtil
+import config as cf
+import datatime
 
 
 
@@ -26,8 +26,8 @@ user_email = 'lashwang@outlook.com'
 
 class Mail(object):
     def __init__(self):
-        self.subject = 'Stock report on ' + DateTimeUtil.now_datetime()
-        self.content = 'Stock report on ' + DateTimeUtil.now_datetime()
+        self.subject = 'Stock report on ' + datatime.now_datetime()
+        self.content = 'Stock report on ' + datatime.now_datetime()
         self.smtp_server = mail_config_table[cf.smtp_server]
         self.mail_account = mail_config_table[cf.mail_account]
         self.mail_passwd = mail_config_table[cf.mail_passwd]

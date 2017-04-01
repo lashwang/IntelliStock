@@ -8,9 +8,9 @@ try:
 except ImportError:
     from urllib2 import urlopen, Request
 import base64
-import Configuration as cf
-import FileUtils
-from DataBase import DataBase
+import config as cf
+import file_utils
+from database import DataBase
 import logging
 
 
@@ -23,7 +23,7 @@ class HttpCache:
     HTTP_CACHE_INDEX_TABLE = 'cache_index'
 
     def __init__(self):
-        FileUtils.mkdir(cf.CACHE_FOLDER)
+        file_utils.mkdir(cf.CACHE_FOLDER)
 
     def Request(self,url_,from_cache_ = True):
         logger.debug('HttpCache, url is ' + url_)

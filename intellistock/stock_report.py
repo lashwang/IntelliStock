@@ -7,9 +7,9 @@ import time
 import pandas as pd
 import tushare as ts
 
-import Configuration as cf, HttpCache as cache, Mail
+import config as cf, http_cache as cache, mail
 import logging
-import FileUtils
+import file_utils
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +36,12 @@ class StockReport(object):
 
 
     def __init__(self):
-        FileUtils.mkdir(cf.EXPORT_PATH_DIR)
+        file_utils.mkdir(cf.EXPORT_PATH_DIR)
         self.writer = pd.ExcelWriter(cf.EXPORT_XLS_FILE_PATH, engine='xlsxwriter')
         self.cache_engine = cache.HttpCache()
 
     def send_mail(self,files=None):
-        mail_ = Mail.Mail()
+        mail_ = mail.Mail()
         mail_.send_email(files)
 
 
@@ -61,8 +61,7 @@ class StockReport(object):
         return {'totalPages':totalPages,'data':data}
 
 
-
-    def get_new_stock_report(self):
+    def _get_xinggu_data(self):
         pageIndex = 1
         totalPages = 0
         data = pd.DataFrame()
@@ -78,6 +77,17 @@ class StockReport(object):
             else:
                 pageIndex = pageIndex+1
                 time.sleep(cf.REQUEST_DELAY)
+
+        return data
+
+    def _analyse_xingu_report(self):
+        data = self._get_xinggu_data()
+
+        return data
+
+
+    def generate_xingu_report(self):
+        data = self._analyse_xingu_report()
 
         data.to_excel(self.writer, sheet_name=u'次新股')
         self.writer.save()

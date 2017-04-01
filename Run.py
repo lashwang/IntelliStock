@@ -3,7 +3,7 @@
 
 
 import fire
-from intellistock.StockReport import StockReport
+from intellistock.stock_report import StockReport
 import logging
 import sys
 
