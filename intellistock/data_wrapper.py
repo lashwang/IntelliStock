@@ -12,6 +12,7 @@ import tushare as ts
 from StringIO import StringIO
 from database import DataBase
 import dataset
+import arrow
 
 logger = logging.getLogger(__name__)
 
@@ -94,15 +95,17 @@ class DataWrapper:
         df = pd.read_csv(StringIO(data))
 
         all_opened_cal = df.loc[df['isOpen'] == 1]
-        cal = all_opened_cal['calendarDate'].tolist()
+        callist = all_opened_cal['calendarDate'].tolist()
 
-        logger.debug(cal)
+        logger.debug(callist)
 
         db = DataBase.get_db_connection()
         with db:
             table = db[DataWrapper.STOCK_CALENDER_TABLE]
-            for date in cal:
-                table.upsert(dict(cal=date),['cal'])
+            for cal in callist:
+                #1990/12/21
+                a = arrow.get(cal,'YYYY/M/D')
+                table.upsert(dict(cal=a.datetime),['cal'])
 
 
 

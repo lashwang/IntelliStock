@@ -6,3 +6,4 @@ xlsxwriter
 pymongo
 lockfile
 dataset
+arrow
