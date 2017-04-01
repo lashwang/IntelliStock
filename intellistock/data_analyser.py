@@ -12,3 +12,10 @@ class DataAnylyser:
     def _analyse_xingu_report(self):
         data = dw()._get_xinggu_data()
         return data
+
+
+    def _get_k_history(self,code_,from_,to_):
+        pass
+
+
+

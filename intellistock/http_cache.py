@@ -25,10 +25,10 @@ class HttpCache:
     def __init__(self):
         file_utils.mkdir(cf.CACHE_FOLDER)
 
-    def Request(self,url_,from_cache_ = True):
+    def Request(self,url_,from_cache_ = True,cache_timeout_min_ = None):
         logger.debug('HttpCache, url is ' + url_)
         if from_cache_:
-            data = self._load_from_cache(url_)
+            data = self._load_from_cache(url_,cache_timeout_min_)
         else:
             data = None
 
@@ -56,14 +56,14 @@ class HttpCache:
 
 
 
-    def _load_from_cache(self,url_):
+    def _load_from_cache(self,url_,cache_timeout_):
         filename = self._url_to_filename(url_)
         data = None
         index = self._load_index_file(url_)
         logger.debug(index)
 
         if index:
-            if self._is_cache_valid(index):
+            if self._is_cache_valid(index,cache_timeout_):
                 try:
                     with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
                         data = f.read()
@@ -73,8 +73,11 @@ class HttpCache:
 
         return data
 
-    def _is_cache_valid(self,index_):
-        time = index_['time'] + datetime.timedelta(minutes=cf.CACHE_TIME_OUT_MIN)
+    def _is_cache_valid(self,index_,cache_timeout_):
+        if cache_timeout_ is None:
+            cache_timeout_ = cf.CACHE_TIME_OUT_MIN
+
+        time = index_['time'] + datetime.timedelta(minutes=cache_timeout_)
         now = datetime.datetime.now()
         logger.debug(str(time))
 

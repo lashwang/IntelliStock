@@ -6,6 +6,8 @@ import fire
 from intellistock.stock_report import StockReport
 import logging
 import sys
+from intellistock.data_wrapper import DataWrapper as dw
+
 
 def logging_config():
     logger = logging.getLogger()
@@ -18,7 +20,7 @@ def logging_config():
 
 def main():
     logging_config()
-    fire.Fire(StockReport)
+    fire.Fire(dw)
 
 
 if __name__ == "__main__":

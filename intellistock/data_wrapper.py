@@ -8,8 +8,10 @@ import time
 import logging
 import config as cf
 import pandas as pd
-
-
+import tushare as ts
+from StringIO import StringIO
+from database import DataBase
+import dataset
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +19,14 @@ logger = logging.getLogger(__name__)
 
 
 class DataWrapper:
+
+    CACHE_TIMEOUT_TABLE = {
+        'trade_check':10
+    }
+
+    STOCK_CALENDER_TABLE = "stock_calender"
+
+
     def __init__(self):
         self.cache_engine = HttpCache()
 
@@ -54,3 +64,53 @@ class DataWrapper:
                 time.sleep(cf.REQUEST_DELAY)
 
         return data
+
+
+    def check_is_trading(self):
+        url = cf.CHECK_IF_TRADING_URL
+        timeout = DataWrapper.CACHE_TIMEOUT_TABLE['trade_check']
+        data = self.cache_engine.Request(url,True,timeout)
+
+        logger.debug(str(data))
+        logger.debug(data)
+
+        data = data.split('=')[1]
+        data = data.split('"')[1]
+        data = data.split('|')[2]
+        data = data.split('_')[1]
+
+        if data == 'close':
+            logger.debug('trade closed')
+            return False
+
+        if data == 'open':
+            logger.debug('trade opening')
+            return True
+
+        return False
+
+    def get_all_trade_cal(self):
+        data = self.cache_engine.Request('http://218.244.146.57/static/calAll.csv')
+        df = pd.read_csv(StringIO(data))
+
+        all_opened_cal = df.loc[df['isOpen'] == 1]
+        cal = all_opened_cal['calendarDate'].tolist()
+
+        logger.debug(cal)
+
+        db = DataBase.get_db_connection()
+        with db:
+            table = db[DataWrapper.STOCK_CALENDER_TABLE]
+            for date in cal:
+                table.upsert(dict(cal=date),['cal'])
+
+
+
+
+
+
+
+
+
+
+

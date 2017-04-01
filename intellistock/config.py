@@ -76,3 +76,5 @@ CACHE_DB_FILE = 'cache.db'
 STOCK_DB_FOLDER = os.path.join(EXPORT_PATH_DIR,'db')
 STOCK_DB_PATH = os.path.join(STOCK_DB_FOLDER,'stock.db')
 
+
+CHECK_IF_TRADING_URL = 'http://appqt.gtimg.cn/utf8/q=marketStat'
