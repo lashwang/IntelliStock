@@ -15,26 +15,6 @@ logger = logging.getLogger(__name__)
 
 class StockReport(object):
 
-    def _read_basic_stock_from_file(self):
-        df = pd.read_csv('data/all.csv', dtype={'code':'object'})
-        df.set_index('code')
-        return df
-
-    def _read_baisc_stock_from_network(self):
-        df = ts.get_stock_basics()
-        return df
-
-    def _get_time_str(self,time):
-        time = str(time)
-        timeToMarket = time[0:4] + '-' + time[4:6] + '-' + time[6:8]
-        return timeToMarket
-
-
-    def _get_basic_stock_list(self):
-        df = self._read_basic_stock_from_file()
-        self.new_stock_list = df.filter(items=['code','outstanding','totals','timeToMarket'])
-
-
     def __init__(self):
         file_utils.mkdir(cf.EXPORT_PATH_DIR)
         self.writer = pd.ExcelWriter(cf.EXPORT_XLS_FILE_PATH, engine='xlsxwriter')
@@ -96,6 +76,6 @@ class StockReport(object):
         return os.path.abspath(cf.EXPORT_XLS_FILE_PATH)
 
     def run(self):
-        export_xls_path = self.get_new_stock_report()
+        export_xls_path = self.generate_xingu_report()
         f = [export_xls_path]
         self.send_mail(f)
