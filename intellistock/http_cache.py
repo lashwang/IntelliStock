@@ -75,7 +75,7 @@ class HttpCache:
 
     def _is_cache_valid(self,index_,cache_timeout_):
         if cache_timeout_ is None:
-            cache_timeout_ = cf.CACHE_TIME_OUT_MIN
+            cache_timeout_ = cf.DEFAULT_CACHE_TIME_OUT_MIN
 
         time = index_['time'] + datetime.timedelta(minutes=cache_timeout_)
         now = datetime.datetime.now()

@@ -1,18 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from http_cache import HttpCache
 import json
-import os
-import time
 import logging
-import config as cf
+import time
+from StringIO import StringIO
+
+import arrow
 import pandas as pd
 import tushare as ts
-from StringIO import StringIO
+
+import config as cf
 from database import DataBase
-import dataset
-import arrow
+from http_cache import HttpCache
+from intellistock.rawdata.get_k_data import GetKData
 
 logger = logging.getLogger(__name__)
 
@@ -108,9 +109,8 @@ class DataWrapper:
                 table.upsert(dict(cal=a.datetime),['cal'])
 
 
-
-
-
+    def interface_test(self):
+        GetKData.get_FHPG_info('000001')
 
 
 
