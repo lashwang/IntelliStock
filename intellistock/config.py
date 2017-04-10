@@ -65,7 +65,7 @@ REQUEST_DELAY = 1
 
 # cache time out, min
 CACHE_FOLDER = os.path.join(EXPORT_PATH_DIR,'cache')
-DEFAULT_CACHE_TIME_OUT_MIN = 60
+DEFAULT_CACHE_TIME_OUT_MIN = 120
 
 CACHE_LOCK_FILE = 'index.lock'
 

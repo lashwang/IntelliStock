@@ -6,6 +6,8 @@ from intellistock.http_cache import HttpCache
 from lxml import etree
 import StringIO
 import pandas as pd
+from html_parser import HtmlParser as hp;
+
 
 logger = logging.getLogger(__name__)
 
@@ -34,12 +36,19 @@ class GetKData(object):
         html_raw = HttpCache().Request(url)
         parser = etree.HTMLParser()
         html = etree.parse(StringIO.StringIO(html_raw),parser=parser)
-        table = html.xpath("/html/body[@class='test']/div[@class='area']/div[@class='inner_box'][1]/table[@class='table_bg001 border_box limit_sale']")
-        logger.debug(len(table))
-        table = table[0]
-        logger.debug(table)
-        logger.debug(type(table))
-        logger.debug(table.xpath("//thead"))
+
+
+        path = "/html/body[@class='test']/div[@class='area']/div[@class='inner_box'][1]"
+        table = html.xpath(path)[0]
+        hp.dumpElement(table)
+
+        table = table.xpath("//td")
+
+        hp.dumpElements(table)
+
+
+
+
 
 
 
