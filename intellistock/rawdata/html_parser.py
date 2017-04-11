@@ -13,7 +13,7 @@ class HtmlParser(object):
 
     @classmethod
     def dumpElement(cls,node):
-        logger.debug("dumpping node type :{}".format(type(node)))
+        logger.debug("Dumpping node type :{}".format(type(node)))
         if not isinstance(node,etree._Element):
             logger.error("get type {} expected type {}".format(type(node),type(etree._Element)))
             return
@@ -24,5 +24,6 @@ class HtmlParser(object):
 
     @classmethod
     def dumpElements(cls,nodes):
+        logger.debug("Dumpping list nodes, size = {}".format(len(nodes)))
         for node in nodes:
             cls.dumpElement(node)

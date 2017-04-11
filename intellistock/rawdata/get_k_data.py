@@ -7,7 +7,7 @@ from lxml import etree
 import StringIO
 import pandas as pd
 from html_parser import HtmlParser as hp;
-
+from bs4 import BeautifulSoup
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +33,32 @@ class GetKData(object):
             return None
 
         url = cls.FHPG_URL.format(code)
-        html_raw = HttpCache().Request(url)
+        html = HttpCache().Request(url)
+
+
+        '''
         parser = etree.HTMLParser()
         html = etree.parse(StringIO.StringIO(html_raw),parser=parser)
 
 
-        path = "/html/body[@class='test']/div[@class='area']/div[@class='inner_box'][1]"
+        #path = "/html/body[@class='test']/div[@class='area']/div[@class='inner_box'][1]"
+        path = "//table[@class='table_bg001 border_box limit_sale']"
         table = html.xpath(path)[0]
         hp.dumpElement(table)
+        rows = iter(table)
+        logger.debug("table rows:{}".format(rows))
+        '''
 
-        table = table.xpath("//td")
+        soup = BeautifulSoup(html,"lxml")
+        table = soup.find("table", attrs={"class": "table_bg001 border_box limit_sale"})
 
-        hp.dumpElements(table)
+        logger.debug(table.prettify("utf-8"))
+
+        rows = table.find_all("tr")
+
+        for row in rows:
+            logger.debug(row.prettify("utf-8"))
+
 
 
 
