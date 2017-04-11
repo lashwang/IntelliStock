@@ -13,7 +13,8 @@ import tushare as ts
 import config as cf
 from database import DataBase
 from http_cache import HttpCache
-from intellistock.rawdata.get_k_data import GetKData
+from intellistock.basicdata.get_k_data import GetKData
+from intellistock.basicdata.get_basic_info import GetBasicInfo
 
 logger = logging.getLogger(__name__)
 
@@ -110,9 +111,9 @@ class DataWrapper:
 
 
     def interface_test(self):
-        GetKData.get_FHPG_info('000001')
-        GetKData.get_FHPG_info('300619')
-        GetKData.get_FHPG_info('300414')
+        GetBasicInfo.get_FHPG_info('000001')
+        GetBasicInfo.get_FHPG_info('300619')
+        GetBasicInfo.get_FHPG_info('300414')
 
 
 
