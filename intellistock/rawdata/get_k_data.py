@@ -23,6 +23,29 @@ class GetKData(object):
     def text(cls,elt):
         return elt
 
+
+    @classmethod
+    def is_head(cls,row):
+        attrs = row.get("class")
+        if attrs is None:
+            return False
+
+        if "dbrow" in attrs:
+            return True
+
+        return False
+
+    @classmethod
+    def parse_FHPG_cols(cls,cols):
+        data = {}
+
+        if len(cols) != 8:
+            return data
+
+        logger.debug(cols)
+
+
+
     @classmethod
     def get_FHPG_info(cls,code=None):
         '''
@@ -35,29 +58,18 @@ class GetKData(object):
         url = cls.FHPG_URL.format(code)
         html = HttpCache().Request(url)
 
-
-        '''
-        parser = etree.HTMLParser()
-        html = etree.parse(StringIO.StringIO(html_raw),parser=parser)
-
-
-        #path = "/html/body[@class='test']/div[@class='area']/div[@class='inner_box'][1]"
-        path = "//table[@class='table_bg001 border_box limit_sale']"
-        table = html.xpath(path)[0]
-        hp.dumpElement(table)
-        rows = iter(table)
-        logger.debug("table rows:{}".format(rows))
-        '''
-
         soup = BeautifulSoup(html,"lxml")
         table = soup.find("table", attrs={"class": "table_bg001 border_box limit_sale"})
-
-        logger.debug(table.prettify("utf-8"))
 
         rows = table.find_all("tr")
 
         for row in rows:
-            logger.debug(row.prettify("utf-8"))
+            logger.debug(row)
+            if not cls.is_head(row):
+                cols = row.find_all("td")
+                cls.parse_FHPG_cols(cols)
+
+
 
 
 

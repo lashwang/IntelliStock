@@ -111,6 +111,8 @@ class DataWrapper:
 
     def interface_test(self):
         GetKData.get_FHPG_info('000001')
+        GetKData.get_FHPG_info('300619')
+        GetKData.get_FHPG_info('300414')
 
 
 
