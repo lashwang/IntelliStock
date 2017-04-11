@@ -8,6 +8,8 @@ import StringIO
 import pandas as pd
 from html_parser import HtmlParser as hp;
 from bs4 import BeautifulSoup
+import numpy as np
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +17,10 @@ logger = logging.getLogger(__name__)
 class GetKData(object):
 
     FHPG_URL = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
+    '''
+    公告日期	分红年度 送股	转增	派息	股权登记日 除权除息日 红股上市日
+    '''
+    FHPG_INDEX = ['GGRQ', 'FHND', 'SG', 'ZZ', 'PX', 'GQDJR', 'CQCXR', 'HGSSR']
 
     def __init__(self):
         pass
@@ -39,11 +45,15 @@ class GetKData(object):
     def parse_FHPG_cols(cls,cols):
         data = {}
 
+
         if len(cols) != 8:
-            return data
+            return None
 
-        logger.debug(cols)
 
+        for idx,col in enumerate(cols):
+            data[cls.FHPG_INDEX[idx]] = [col.text]
+
+        return data
 
 
     @classmethod
@@ -54,6 +64,7 @@ class GetKData(object):
         if code is None:
             logger.error('the stock code is empty')
             return None
+        df = pd.DataFrame()
 
         url = cls.FHPG_URL.format(code)
         html = HttpCache().Request(url)
@@ -64,12 +75,13 @@ class GetKData(object):
         rows = table.find_all("tr")
 
         for row in rows:
-            logger.debug(row)
             if not cls.is_head(row):
                 cols = row.find_all("td")
-                cls.parse_FHPG_cols(cols)
+                df = df.append(pd.DataFrame(cls.parse_FHPG_cols(cols)),ignore_index=True)
 
+        logger.debug(df)
 
+        return df
 
 
 
