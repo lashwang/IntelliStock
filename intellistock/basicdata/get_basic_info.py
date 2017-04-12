@@ -38,7 +38,7 @@ class GetFHPGInfo(object):
 
 
     @classmethod
-    def is_head(cls,row):
+    def _is_head(cls,row):
         attrs = row.get("class")
         if attrs is None:
             return False
@@ -49,7 +49,7 @@ class GetFHPGInfo(object):
         return False
 
     @classmethod
-    def parse_FHPG_cols(cls,cols):
+    def _parse_FHPG_cols(cls,cols):
         data = {}
 
 
@@ -82,9 +82,9 @@ class GetFHPGInfo(object):
         rows = table.find_all("tr")
 
         for row in rows:
-            if not cls.is_head(row):
+            if not cls._is_head(row):
                 cols = row.find_all("td")
-                df = df.append(pd.DataFrame(cls.parse_FHPG_cols(cols)),ignore_index=True)
+                df = df.append(pd.DataFrame(cls._parse_FHPG_cols(cols)),ignore_index=True)
 
         logger.debug(df)
 
@@ -99,12 +99,34 @@ class GetGBJGInfo(object):
 
     GBJG_URL = "http://stock.finance.qq.com/corp1/stk_struct.php?zqdm={}"
 
+    GBJG_HEADS = [u"变动日期",u"总股本",u"流通股份",u"限售流通股",u"未流通股份"]
+
+
     def __init__(self):
         pass
 
 
-    @staticmethod
-    def parse_total_page(soup):
+    @classmethod
+    def _to_unicode(cls,_str):
+        if isinstance(_str,unicode):
+            return _str
+
+        return _str.decode('utf-8')
+
+
+    @classmethod
+    def _find_index(cls,head,sub_head):
+        index = []
+
+        for _sub_head in sub_head:
+            index.append(head.index(cls._to_unicode(_sub_head)))
+
+        logger.debug(index)
+
+        return index
+
+    @classmethod
+    def _parse_total_page(cls,soup):
         tables = soup.find_all("table")
         head = tables[1]
         rows = head.find_all("td")
@@ -114,26 +136,91 @@ class GetGBJGInfo(object):
             logger.debug("url is {}".format(url))
             parsed = urlparse.urlparse(url)
             page = urlparse.parse_qs(parsed.query)['type'][0]
-            logger.debug("total page is {}, origin URL is {}:".format(page,url))
+            logger.debug("total page is {}, origin URL is {}".format(page,url))
         else:
             logger.debug("total page is zero")
             page = 0
 
-        return page
+        return int(page)
+
+    @classmethod
+    def _get_table_heads(cls,table):
+        data = []
+        rows = table.find_all("tr")
+        for row in rows:
+            heads = row.find_all("th")
+            for head in heads:
+                data.append(head.text)
+
+        logger.debug(data)
+
+        return data
+
+    @classmethod
+    def _parse_GBJG_table(cls,soup):
+
+        df_dict = {}
+        tables = soup.find_all("table")
+        table = tables[-1]
+        table_heads = cls._get_table_heads(table)
+        select_heads = cls._find_index(table_heads,GetGBJGInfo.GBJG_HEADS)
+        rows = table.find_all("tr")
+        for _idx_row,row in enumerate(rows):
+            if _idx_row not in select_heads:
+                continue
+            _head_index = select_heads.index(_idx_row)
+            cols = row.find_all("td")
+
+            _line = []
+            for _idx_col, col in enumerate(cols):
+                #logger.debug(u"{} - {}:{}".format(cls.GBJG_HEADS[_head_index],_idx_col,cls._to_unicode(col.text)))
+                _line.append(cls._to_unicode(col.text))
+
+            df_dict[cls.GBJG_HEADS[_head_index]] = _line
+
+
+
+        return pd.DataFrame(df_dict)
+
+
+    @classmethod
+    def _load_page(cls,code,page = 0):
+        if page == 0:
+            url = cls.GBJG_URL.format(code)
+        else:
+            url = cls.GBJG_URL.format(code) + "&type={}".format(page)
+        html = HttpCache().Request(url)
+        soup = BeautifulSoup(html, "lxml")
+
+        return soup
+
+    @classmethod
+    def _remove_empty_lines(cls,df):
+        logger.debug(df[0])
+        return df.dropna()
 
 
     @classmethod
     def get_GBJG_info(cls,code):
-        type = 0
+        _page_index = 0
         if code is None:
             logger.error('the stock code is empty')
             return None
-        df = pd.DataFrame()
-        url = cls.GBJG_URL.format(code,type)
-        html = HttpCache().Request(url)
-        soup = BeautifulSoup(html, "lxml")
-        total_page = cls.parse_total_page(soup)
+        soup = cls._load_page(code)
+        _total_page = cls._parse_total_page(soup)
+        df = cls._parse_GBJG_table(soup)
 
+        while _page_index < _total_page:
+            _page_index = _page_index + 1
+            soup = cls._load_page(code,_page_index)
+            _sub_df = cls._parse_GBJG_table(soup)
+            df = df.append(_sub_df,ignore_index=True)
+
+        df = cls._remove_empty_lines(df)
+        logger.debug(df)
+
+
+        return df
 
 
 
