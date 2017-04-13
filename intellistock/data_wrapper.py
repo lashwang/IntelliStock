@@ -111,8 +111,8 @@ class DataWrapper:
 
 
     def interface_test(self):
-        GetBasicInfo.get_GBJG_info('000001')
-        GetBasicInfo.get_GBJG_info('300619')
+        #GetBasicInfo.get_GBJG_info('000001')
+        #GetBasicInfo.get_GBJG_info('300619')
         GetBasicInfo.get_GBJG_info('300414')
 
 

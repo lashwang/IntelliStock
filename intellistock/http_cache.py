@@ -33,7 +33,7 @@ class HttpCache:
             data = None
 
         if data is not None:
-            logger.debug('load from cache')
+            logger.debug('load from cache,cache name is {}'.format(self._url_to_filename(url_)))
             return data
 
         try:

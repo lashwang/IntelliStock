@@ -157,6 +157,15 @@ class GetGBJGInfo(object):
         return data
 
     @classmethod
+    def _normalize_str(cls,_str):
+        uniString = cls._to_unicode(_str)
+        uniString = uniString.replace(u"\u00A0", "")
+        logger.debug(cls._string_to_hex(uniString))
+        return uniString
+
+
+
+    @classmethod
     def _parse_GBJG_table(cls,soup):
 
         df_dict = {}
@@ -173,8 +182,7 @@ class GetGBJGInfo(object):
 
             _line = []
             for _idx_col, col in enumerate(cols):
-                #logger.debug(u"{} - {}:{}".format(cls.GBJG_HEADS[_head_index],_idx_col,cls._to_unicode(col.text)))
-                _line.append(cls._to_unicode(col.text))
+                _line.append(cls._normalize_str(col.text))
 
             df_dict[cls.GBJG_HEADS[_head_index]] = _line
 
@@ -189,15 +197,26 @@ class GetGBJGInfo(object):
             url = cls.GBJG_URL.format(code)
         else:
             url = cls.GBJG_URL.format(code) + "&type={}".format(page)
+
+        logger.debug("url is {}".format(url))
         html = HttpCache().Request(url)
         soup = BeautifulSoup(html, "lxml")
 
         return soup
 
     @classmethod
+    def _string_to_hex(cls,_string):
+        if isinstance(_string,unicode):
+            _string = _string.encode("utf8")
+
+        return ':'.join(x.encode('hex') for x in _string)
+
+
+    @classmethod
     def _remove_empty_lines(cls,df):
-        logger.debug(df[0])
-        return df.dropna()
+        date = cls.GBJG_HEADS[0]
+        df = df.loc[df[date] != ""]
+        return df
 
 
     @classmethod
@@ -218,8 +237,6 @@ class GetGBJGInfo(object):
 
         df = cls._remove_empty_lines(df)
         logger.debug(df)
-
-
         return df
 
 
