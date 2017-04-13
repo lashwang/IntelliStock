@@ -10,6 +10,23 @@ import urlparse
 logger = logging.getLogger(__name__)
 
 
+def _to_unicode(_str):
+    if isinstance(_str, unicode):
+        return _str
+
+    return _str.decode('utf-8')
+
+
+def _string_to_hex(_string):
+    if isinstance(_string,unicode):
+        _string = _string.encode("utf8")
+
+    return ':'.join(x.encode('hex') for x in _string)
+
+
+
+
+
 class GetBasicInfo(object):
     def __init__(self):
         pass
@@ -33,6 +50,9 @@ class GetFHPGInfo(object):
     '''
     FHPG_INDEX = ['GGRQ', 'FHND', 'SG', 'ZZ', 'PX', 'GQDJR', 'CQCXR', 'HGSSR']
 
+    FHPG_SELECT_HEADS = [u"分红年度",u"除权除息日",u"送股",u"转增",u"派息"]
+
+
     def __init__(self):
         pass
 
@@ -47,6 +67,16 @@ class GetFHPGInfo(object):
             return True
 
         return False
+
+    @classmethod
+    def _get_head(cls,row):
+        heads = []
+        all_th = row.find_all("th")
+        for th in all_th:
+            heads.append(th.text)
+
+        return heads
+
 
     @classmethod
     def _parse_FHPG_cols(cls,cols):
@@ -81,11 +111,17 @@ class GetFHPGInfo(object):
 
         rows = table.find_all("tr")
 
+        heads = []
+
         for row in rows:
             if not cls._is_head(row):
                 cols = row.find_all("td")
                 df = df.append(pd.DataFrame(cls._parse_FHPG_cols(cols)),ignore_index=True)
+            else:
+                logger.debug(row)
+                heads.append(cls._get_head(row))
 
+        logger.debug(heads)
         logger.debug(df)
 
         return df
@@ -105,21 +141,12 @@ class GetGBJGInfo(object):
     def __init__(self):
         pass
 
-
-    @classmethod
-    def _to_unicode(cls,_str):
-        if isinstance(_str,unicode):
-            return _str
-
-        return _str.decode('utf-8')
-
-
     @classmethod
     def _find_index(cls,head,sub_head):
         index = []
 
         for _sub_head in sub_head:
-            index.append(head.index(cls._to_unicode(_sub_head)))
+            index.append(head.index(_to_unicode(_sub_head)))
 
         logger.debug(index)
 
@@ -158,16 +185,14 @@ class GetGBJGInfo(object):
 
     @classmethod
     def _normalize_str(cls,_str):
-        uniString = cls._to_unicode(_str)
+        uniString = _to_unicode(_str)
         uniString = uniString.replace(u"\u00A0", "")
-        logger.debug(cls._string_to_hex(uniString))
         return uniString
 
 
 
     @classmethod
     def _parse_GBJG_table(cls,soup):
-
         df_dict = {}
         tables = soup.find_all("table")
         table = tables[-1]
@@ -203,13 +228,6 @@ class GetGBJGInfo(object):
         soup = BeautifulSoup(html, "lxml")
 
         return soup
-
-    @classmethod
-    def _string_to_hex(cls,_string):
-        if isinstance(_string,unicode):
-            _string = _string.encode("utf8")
-
-        return ':'.join(x.encode('hex') for x in _string)
 
 
     @classmethod
