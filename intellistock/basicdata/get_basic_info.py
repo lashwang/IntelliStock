@@ -24,7 +24,15 @@ def _string_to_hex(_string):
     return ':'.join(x.encode('hex') for x in _string)
 
 
+def _find_index(head,sub_head):
+    index = []
 
+    for _sub_head in sub_head:
+        index.append(head.index(_to_unicode(_sub_head)))
+
+    logger.debug(index)
+
+    return index
 
 
 class GetBasicInfo(object):
@@ -59,13 +67,9 @@ class GetFHPGInfo(object):
 
     @classmethod
     def _is_head(cls,row):
-        attrs = row.get("class")
-        if attrs is None:
-            return False
-
-        if "dbrow" in attrs:
+        _parent = row.parent
+        if _parent.name == "thead":
             return True
-
         return False
 
     @classmethod
@@ -73,6 +77,8 @@ class GetFHPGInfo(object):
         heads = []
         all_th = row.find_all("th")
         for th in all_th:
+            if th.get('colspan') is not None:
+                continue
             heads.append(th.text)
 
         return heads
@@ -80,18 +86,33 @@ class GetFHPGInfo(object):
 
     @classmethod
     def _parse_FHPG_cols(cls,cols):
-        data = {}
+        data = []
 
 
         if len(cols) != 8:
-            return None
+            return data
 
 
-        for idx,col in enumerate(cols):
-            data[cls.FHPG_INDEX[idx]] = [col.text]
+        for val in cols:
+            data.append(val.text)
 
         return data
 
+    @classmethod
+    def _normalise_heads(cls,heads):
+        _line_1 = heads[0]
+        _line_2 = reversed(heads[1])
+        for _val in _line_2:
+            _line_1.insert(2,_val)
+
+
+        return _line_1
+
+    @classmethod
+    def _to_pandas_format(cls,heads,rows):
+        if len(rows) == 0:
+            return pd.DataFrame()
+        return pd.DataFrame(rows, columns=heads)
 
     @classmethod
     def get_FHPG_info(cls,code):
@@ -112,18 +133,24 @@ class GetFHPGInfo(object):
         rows = table.find_all("tr")
 
         heads = []
+        all_rows = []
 
         for row in rows:
             if not cls._is_head(row):
                 cols = row.find_all("td")
-                df = df.append(pd.DataFrame(cls._parse_FHPG_cols(cols)),ignore_index=True)
+                one_row = cls._parse_FHPG_cols(cols)
+                if len(one_row) > 0:
+                    all_rows.append(one_row)
             else:
-                logger.debug(row)
+                #logger.debug(row)
                 heads.append(cls._get_head(row))
 
-        logger.debug(heads)
-        logger.debug(df)
+        heads = cls._normalise_heads(heads)
+        #logger.debug(heads)
+        #logger.debug(all_rows)
 
+        df = cls._to_pandas_format(heads,all_rows)
+        logger.debug(df)
         return df
 
 
@@ -141,16 +168,7 @@ class GetGBJGInfo(object):
     def __init__(self):
         pass
 
-    @classmethod
-    def _find_index(cls,head,sub_head):
-        index = []
 
-        for _sub_head in sub_head:
-            index.append(head.index(_to_unicode(_sub_head)))
-
-        logger.debug(index)
-
-        return index
 
     @classmethod
     def _parse_total_page(cls,soup):
@@ -197,7 +215,7 @@ class GetGBJGInfo(object):
         tables = soup.find_all("table")
         table = tables[-1]
         table_heads = cls._get_table_heads(table)
-        select_heads = cls._find_index(table_heads,GetGBJGInfo.GBJG_HEADS)
+        select_heads = _find_index(table_heads,GetGBJGInfo.GBJG_HEADS)
         rows = table.find_all("tr")
         for _idx_row,row in enumerate(rows):
             if _idx_row not in select_heads:

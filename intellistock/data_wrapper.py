@@ -114,7 +114,7 @@ class DataWrapper:
         stock_list = ['000001','300619','300414']
         for _code in stock_list:
             GetBasicInfo.get_FHPG_info(_code)
-            GetBasicInfo.get_GBJG_info(_code)
+            #GetBasicInfo.get_GBJG_info(_code)
 
 
         # GetBasicInfo.get_GBJG_info('000001')
