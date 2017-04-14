@@ -24,15 +24,6 @@ def _string_to_hex(_string):
     return ':'.join(x.encode('hex') for x in _string)
 
 
-def _find_index(head,sub_head):
-    index = []
-
-    for _sub_head in sub_head:
-        index.append(head.index(_to_unicode(_sub_head)))
-
-    logger.debug(index)
-
-    return index
 
 
 class GetBasicInfo(object):
@@ -53,11 +44,6 @@ class GetFHPGInfo(object):
 
 
     FHPG_URL = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
-    '''
-    公告日期	分红年度 送股	转增	派息	股权登记日 除权除息日 红股上市日
-    '''
-    FHPG_INDEX = ['GGRQ', 'FHND', 'SG', 'ZZ', 'PX', 'GQDJR', 'CQCXR', 'HGSSR']
-
     FHPG_SELECT_HEADS = [u"分红年度",u"除权除息日",u"送股",u"转增",u"派息"]
 
 
@@ -150,6 +136,8 @@ class GetFHPGInfo(object):
         #logger.debug(all_rows)
 
         df = cls._to_pandas_format(heads,all_rows)
+        if len(df) != 0:
+            df = df[cls.FHPG_SELECT_HEADS]
         logger.debug(df)
         return df
 
@@ -215,23 +203,22 @@ class GetGBJGInfo(object):
         tables = soup.find_all("table")
         table = tables[-1]
         table_heads = cls._get_table_heads(table)
-        select_heads = _find_index(table_heads,GetGBJGInfo.GBJG_HEADS)
         rows = table.find_all("tr")
         for _idx_row,row in enumerate(rows):
-            if _idx_row not in select_heads:
-                continue
-            _head_index = select_heads.index(_idx_row)
             cols = row.find_all("td")
-
             _line = []
-            for _idx_col, col in enumerate(cols):
+            for col in (cols):
                 _line.append(cls._normalize_str(col.text))
 
-            df_dict[cls.GBJG_HEADS[_head_index]] = _line
+            df_dict[table_heads[_idx_row]] = _line
 
 
 
-        return pd.DataFrame(df_dict)
+        df = pd.DataFrame(df_dict)
+
+        df = df[cls.GBJG_HEADS]
+
+        return df
 
 
     @classmethod
