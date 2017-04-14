@@ -6,6 +6,8 @@ from intellistock.http_cache import HttpCache
 import pandas as pd
 from bs4 import BeautifulSoup
 import urlparse
+from datetime import datetime
+from collections import OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,23 @@ def _string_to_hex(_string):
 
     return ':'.join(x.encode('hex') for x in _string)
 
+def _type_compare(type1,type2):
+    return type1.__name__ == type2.__name__
 
+
+def _normalise_colomn_format(_df,_header,_formator):
+    for _idx,_format in enumerate(_formator):
+        _key = _header[_idx]
+        if _type_compare(_format,datetime):
+            _df[_key] = pd.to_datetime(_df[_key])
+            pass
+        elif _type_compare(_format,float):
+            _df[_key].replace(u'--',0,inplace=True)
+            _df[_key] = pd.to_numeric(_df[_key])
+            pass
+
+
+    return _df
 
 
 class GetBasicInfo(object):
@@ -43,9 +61,9 @@ class GetBasicInfo(object):
 class GetFHPGInfo(object):
 
 
-    FHPG_URL = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
-    FHPG_SELECT_HEADS = [u"分红年度",u"除权除息日",u"送股",u"转增",u"派息"]
-
+    URL_FORMAT = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
+    OUTPUT_HEADERS = [u"分红年度",u"除权除息日",u"送股",u"转增",u"派息"]
+    OUTPUT_FORMAT = [datetime,datetime,float,float,float]
 
     def __init__(self):
         pass
@@ -108,9 +126,8 @@ class GetFHPGInfo(object):
         if code is None:
             logger.error('the stock code is empty')
             return None
-        df = pd.DataFrame()
 
-        url = cls.FHPG_URL.format(code)
+        url = cls.URL_FORMAT.format(code)
         html = HttpCache().Request(url)
 
         soup = BeautifulSoup(html,"lxml")
@@ -137,7 +154,10 @@ class GetFHPGInfo(object):
 
         df = cls._to_pandas_format(heads,all_rows)
         if len(df) != 0:
-            df = df[cls.FHPG_SELECT_HEADS]
+            df = df[list(cls.OUTPUT_HEADERS)]
+            df = _normalise_colomn_format(df, cls.OUTPUT_HEADERS, cls.OUTPUT_FORMAT)
+
+
         logger.debug(df)
         return df
 
