@@ -7,7 +7,8 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import urlparse
 from datetime import datetime
-from collections import OrderedDict
+import numpy as np
+
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,12 @@ def _to_unicode(_str):
         return _str
 
     return _str.decode('utf-8')
+
+def _to_str(_str):
+    if isinstance(_str,str):
+        return _str
+
+    return _str.encode('utf-8')
 
 
 def _string_to_hex(_string):
@@ -35,10 +42,14 @@ def _normalise_colomn_format(_df,_header,_formator):
         if _type_compare(_format,datetime):
             _df[_key] = pd.to_datetime(_df[_key])
             pass
-        elif _type_compare(_format,float):
+        elif _type_compare(_format,float) or _type_compare(_format,int):
             _df[_key].replace(u'--',0,inplace=True)
+            _df[_key] = _df[_key].astype(np.str).str.replace(',','')
             _df[_key] = pd.to_numeric(_df[_key])
+            _df[_key].fillna(0.0, inplace=True)
+
             pass
+
 
 
     return _df
@@ -168,10 +179,10 @@ class GetGBJGInfo(object):
     原始url: http://stock.finance.qq.com/corp1/stk_struct.php?zqdm=000001
     '''
 
-    GBJG_URL = "http://stock.finance.qq.com/corp1/stk_struct.php?zqdm={}"
+    URL_FORMAT = "http://stock.finance.qq.com/corp1/stk_struct.php?zqdm={}"
 
-    GBJG_HEADS = [u"变动日期",u"总股本",u"流通股份",u"限售流通股",u"未流通股份"]
-
+    OUTPUT_HEADS = [u"变动日期", u"总股本", u"流通股份", u"限售流通股", u"未流通股份"]
+    OUTPUT_FORMAT = [datetime,int,int,int,int]
 
     def __init__(self):
         pass
@@ -236,7 +247,7 @@ class GetGBJGInfo(object):
 
         df = pd.DataFrame(df_dict)
 
-        df = df[cls.GBJG_HEADS]
+        df = df[cls.OUTPUT_HEADS]
 
         return df
 
@@ -244,9 +255,9 @@ class GetGBJGInfo(object):
     @classmethod
     def _load_page(cls,code,page = 0):
         if page == 0:
-            url = cls.GBJG_URL.format(code)
+            url = cls.URL_FORMAT.format(code)
         else:
-            url = cls.GBJG_URL.format(code) + "&type={}".format(page)
+            url = cls.URL_FORMAT.format(code) + "&type={}".format(page)
 
         logger.debug("url is {}".format(url))
         html = HttpCache().Request(url)
@@ -257,7 +268,7 @@ class GetGBJGInfo(object):
 
     @classmethod
     def _remove_empty_lines(cls,df):
-        date = cls.GBJG_HEADS[0]
+        date = cls.OUTPUT_HEADS[0]
         df = df.loc[df[date] != ""]
         return df
 
@@ -279,6 +290,7 @@ class GetGBJGInfo(object):
             df = df.append(_sub_df,ignore_index=True)
 
         df = cls._remove_empty_lines(df)
+        df = _normalise_colomn_format(df,cls.OUTPUT_HEADS,cls.OUTPUT_FORMAT)
         logger.debug(df)
         return df
 

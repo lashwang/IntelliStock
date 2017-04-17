@@ -1,5 +1,5 @@
 fire
-pandas
+pandas>=0.19.2
 lxml
 tushare
 xlsxwriter
