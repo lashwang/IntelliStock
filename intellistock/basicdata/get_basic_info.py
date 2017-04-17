@@ -181,8 +181,8 @@ class GetGBJGInfo(object):
 
     URL_FORMAT = "http://stock.finance.qq.com/corp1/stk_struct.php?zqdm={}"
 
-    OUTPUT_HEADS = [u"变动日期", u"总股本", u"流通股份", u"限售流通股", u"未流通股份"]
-    OUTPUT_FORMAT = [datetime,int,int,int,int]
+    OUTPUT_HEADS = [u"变动日期", u"总股本", u"流通股份"]
+    OUTPUT_FORMAT = [datetime,int,int]
 
     def __init__(self):
         pass
