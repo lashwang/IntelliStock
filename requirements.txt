@@ -7,3 +7,4 @@ pymongo
 lockfile
 dataset
 arrow
+aenum
