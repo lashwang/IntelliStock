@@ -27,7 +27,7 @@ class DataWrapper:
 
     def interface_test(self):
         TradeChecking.check_is_trading()
-        #TradeChecking.get_all_trade_cal()
+        TradeChecking.get_all_trade_cal()
         stock_list = ['000001','300619','300414']
         for _code in stock_list:
             #GetBasicInfo.get_FHPG_info(_code)

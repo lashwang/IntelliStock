@@ -8,51 +8,10 @@ from bs4 import BeautifulSoup
 import urlparse
 from datetime import datetime
 import numpy as np
-
+import utils
 
 logger = logging.getLogger(__name__)
 
-
-def _to_unicode(_str):
-    if isinstance(_str, unicode):
-        return _str
-
-    return _str.decode('utf-8')
-
-def _to_str(_str):
-    if isinstance(_str,str):
-        return _str
-
-    return _str.encode('utf-8')
-
-
-def _string_to_hex(_string):
-    if isinstance(_string,unicode):
-        _string = _string.encode("utf8")
-
-    return ':'.join(x.encode('hex') for x in _string)
-
-def _type_compare(type1,type2):
-    return type1.__name__ == type2.__name__
-
-
-def _normalise_colomn_format(_df,_header,_formator):
-    for _idx,_format in enumerate(_formator):
-        _key = _header[_idx]
-        if _type_compare(_format,datetime):
-            _df[_key] = pd.to_datetime(_df[_key])
-            pass
-        elif _type_compare(_format,float) or _type_compare(_format,int):
-            _df[_key].replace(u'--',0,inplace=True)
-            _df[_key] = _df[_key].astype(np.str).str.replace(',','')
-            _df[_key] = pd.to_numeric(_df[_key])
-            _df[_key].fillna(0.0, inplace=True)
-
-            pass
-
-
-
-    return _df
 
 
 class GetBasicInfo(object):
@@ -166,7 +125,7 @@ class GetFHPGInfo(object):
         df = cls._to_pandas_format(heads,all_rows)
         if len(df) != 0:
             df = df[list(cls.OUTPUT_HEADERS)]
-            df = _normalise_colomn_format(df, cls.OUTPUT_HEADERS, cls.OUTPUT_FORMAT)
+            df = utils._normalise_colomn_format(df, cls.OUTPUT_HEADERS, cls.OUTPUT_FORMAT)
 
 
         logger.debug(df)
@@ -222,7 +181,7 @@ class GetGBJGInfo(object):
 
     @classmethod
     def _normalize_str(cls,_str):
-        uniString = _to_unicode(_str)
+        uniString = utils._to_unicode(_str)
         uniString = uniString.replace(u"\u00A0", "")
         return uniString
 
@@ -290,7 +249,7 @@ class GetGBJGInfo(object):
             df = df.append(_sub_df,ignore_index=True)
 
         df = cls._remove_empty_lines(df)
-        df = _normalise_colomn_format(df,cls.OUTPUT_HEADS,cls.OUTPUT_FORMAT)
+        df = utils._normalise_colomn_format(df,cls.OUTPUT_HEADS,cls.OUTPUT_FORMAT)
         logger.debug(df)
         return df
 

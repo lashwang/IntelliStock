@@ -6,6 +6,8 @@ import json
 import pandas as pd
 import time
 from intellistock import config as cf
+from datetime import datetime
+import utils
 
 logger = logging.getLogger(__name__)
 
@@ -20,8 +22,9 @@ class NewStockData(object):
     NEW_STOCK_HEADERS_TRANS = [u"发行价", u"发行市盈率", u"发行总数", u"每中一签约", u"发行地", u"申购代码", u"申购日期",
                                u"申购上限", u"上市日期", u"网上发行", u"中签代码",u"股票简称", u"中签率"]
 
-    NEW_STOCK_OUTPUT_HEADERS = [u"申购日期",u"股票简称",u"中签代码",u"发行价",u"发行市盈率",u"网上发行",u"发行总数"]
+    NEW_STOCK_OUTPUT_HEADERS = [u"申购日期",u"上市日期",u"股票简称",u"中签代码",u"发行价",u"发行市盈率",u"网上发行",u"发行总数"]
 
+    NEW_STOCK_OUTPUT_FORMATER = [datetime,datetime,str,str,float,float,float,float]
 
     def __init__(self):
         pass
@@ -66,6 +69,7 @@ class NewStockData(object):
             time.sleep(cf.REQUEST_DELAY)
 
         df = cls._normalize_output_data(df)
+        df = utils._normalise_colomn_format(df,cls.NEW_STOCK_OUTPUT_HEADERS,cls.NEW_STOCK_OUTPUT_FORMATER)
         logging.debug(df)
         return df
 
