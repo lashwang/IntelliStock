@@ -6,6 +6,8 @@ import logging
 import pandas as pd
 from StringIO import StringIO
 import os
+import arrow
+import ast
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +16,8 @@ class TradeChecking(object):
     CHECK_IF_TRADING_URL = 'http://appqt.gtimg.cn/utf8/q=marketStat'
     TRADE_CHECK_INTERV = 10
     CAL_CSV_PATH = os.path.join(os.path.dirname(__file__) ,"calAll_2017.csv")
+    TRADING_CAL_URL = 'http://vaserviece.10jqka.com.cn/mobilecfxf/data/json_{year}.txt'
+
 
     @classmethod
     def check_is_trading(cls):
@@ -40,12 +44,27 @@ class TradeChecking(object):
         return False
 
     @classmethod
-    def get_all_trade_cal(cls):
-        df = pd.read_csv(cls.CAL_CSV_PATH)
+    def check_trading_day(cls,date):
+        dt = arrow.get(date,'YYYY-MM-DD')
+        url = cls.TRADING_CAL_URL.format(year=dt.year)
 
-        all_opened_cal = df.loc[df['isOpen'] == 1]
-        cal_list = all_opened_cal['calendarDate'].tolist()
+        data = HttpCache().Request(url, cache_timeout_minute=(24*7))
+        cal_list = ast.literal_eval(data)
 
-        logger.debug(cal_list)
+        logging.debug(data)
+
+        date_str = dt.format('MMDD')
+
+        if date_str in cal_list:
+            return True
+
+        return False
+
+
+
+
+
+
+
 
 

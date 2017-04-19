@@ -29,7 +29,11 @@ class DataWrapper:
 
     def interface_test(self):
         TradeChecking.check_is_trading()
-        TradeChecking.get_all_trade_cal()
+        date_list = ["2015-06-10","2016-06-10","2017-06-10"]
+        for date in date_list:
+            Trading = TradeChecking.check_trading_day(date)
+            logging.debug("Trading:{}".format(Trading))
+
         stock_list = ['000002','300619','300414', '600519', '002839', '603039']
         for _code in stock_list:
             #GetBasicInfo.get_FHPG_info(_code)

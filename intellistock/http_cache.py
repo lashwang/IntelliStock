@@ -25,10 +25,10 @@ class HttpCache:
     def __init__(self):
         file_utils.mkdir(cf.CACHE_FOLDER)
 
-    def Request(self,url_,from_cache_ = True,cache_timeout_min_ = None):
+    def Request(self, url_, from_cache_ = True, cache_timeout_minute = None):
         logger.debug('HttpCache, url is ' + url_)
         if from_cache_:
-            data = self._load_from_cache(url_,cache_timeout_min_)
+            data = self._load_from_cache(url_, cache_timeout_minute)
         else:
             data = None
 
