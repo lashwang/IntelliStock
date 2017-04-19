@@ -15,7 +15,7 @@ from database import DataBase
 from http_cache import HttpCache
 from intellistock.trade.get_k_data import GetKData
 from intellistock.trade.get_basic_info import GetBasicInfo
-from intellistock.trade.trade_checking import TradeChecking
+from intellistock.trade.trade_checking import *
 from intellistock.trade.get_new_stock_list import NewStockData
 
 
@@ -28,6 +28,11 @@ logger = logging.getLogger(__name__)
 class DataWrapper:
 
     def interface_test(self):
+
+        isTradingDay = StockCalDay("2015-06-10").is_trading_day()
+        isTrading = StockTradeTime.is_trading()
+
+
         TradeChecking.check_is_trading()
         date_list = ["2015-06-10","2016-06-10","2017-06-10"]
         for date in date_list:
