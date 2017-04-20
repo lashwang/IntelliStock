@@ -9,6 +9,8 @@ import urlparse
 from datetime import datetime
 import numpy as np
 import utils
+from intellistock.trade import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +28,23 @@ class GetBasicInfo(object):
     @classmethod
     def get_GBJG_info(cls,code):
         return GetGBJGInfo.get_GBJG_info(code)
+
+
+class StockDivInfo(HTMLStockSpider):
+    name = "StockDiv"
+    URL_FORMAT = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
+
+    def __init__(self, code, **kwargs):
+        self.code = code
+        super(StockDivInfo, self).__init__(**kwargs)
+
+    def _get_start_url(self):
+        return StockDivInfo.URL_FORMAT.format(self.code)
+
+    def _on_html_response(self, soup):
+        logging.debug(soup)
+
+
 
 
 class GetFHPGInfo(object):

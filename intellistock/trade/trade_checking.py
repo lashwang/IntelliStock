@@ -8,13 +8,13 @@ from StringIO import StringIO
 import os
 import arrow
 import ast
-from intellistock.trade import StockSpiderBase
+from intellistock.trade import SpiderBase, run
 
 
 logger = logging.getLogger(__name__)
 
 
-class StockCalDay(StockSpiderBase):
+class StockCalDay(SpiderBase):
     name = __name__
     CAL_DAY_URL = 'http://vaserviece.10jqka.com.cn/mobilecfxf/data/json_{year}.txt'
 
@@ -25,6 +25,7 @@ class StockCalDay(StockSpiderBase):
     def _get_start_url(self):
         url = StockCalDay.CAL_DAY_URL.format(year=self._cal.year)
         return url
+
 
     def _on_response(self,data):
         self._cal_list = ast.literal_eval(data)
@@ -38,15 +39,14 @@ class StockCalDay(StockSpiderBase):
 
         return False
 
-
+    @run
     def is_trading_day(self):
-        super(StockCalDay, self)._start()
         return self._trade_day
 
 
 
 
-class StockTradeTime(StockSpiderBase):
+class StockTradeTime(SpiderBase):
     name = __name__
     CHECK_IF_TRADING_URL = 'http://appqt.gtimg.cn/utf8/q=marketStat'
 
@@ -72,9 +72,8 @@ class StockTradeTime(StockSpiderBase):
 
         self._trading = False
 
-
+    @run
     def is_trading(self):
-        super(StockTradeTime, self)._start()
         return self._trading
 
 class TradeChecking(object):

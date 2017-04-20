@@ -30,7 +30,7 @@ class DataWrapper:
     def interface_test(self):
 
         isTradingDay = StockCalDay("2015-06-10").is_trading_day()
-        isTrading = StockTradeTime.is_trading()
+        isTrading = StockTradeTime().is_trading()
 
 
         TradeChecking.check_is_trading()
