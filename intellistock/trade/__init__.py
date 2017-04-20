@@ -44,8 +44,8 @@ class SpiderBase(object):
         self.__dict__.update(kwargs)
 
         self.started = False
-        self.cache = True
-        self.cache_timeout = None
+        self._cache = True
+        self._cache_timeout = None
 
 
     @abc.abstractmethod
