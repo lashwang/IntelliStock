@@ -12,14 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
 
-def _to_unicode(_str):
+def to_unicode(_str):
     if isinstance(_str, unicode):
         return _str
 
     return _str.decode('utf-8')
 
-def _to_str(_str):
+def to_str(_str):
     if isinstance(_str,str):
         return _str
 

@@ -10,7 +10,9 @@ from datetime import datetime
 import numpy as np
 import utils
 from intellistock.trade import *
-
+import StringIO
+import html5lib
+import arrow
 
 logger = logging.getLogger(__name__)
 
@@ -30,20 +32,45 @@ class GetBasicInfo(object):
         return GetGBJGInfo.get_GBJG_info(code)
 
 
-class StockDivInfo(HTMLStockSpider):
+class StockDivInfo(SpiderBase):
     name = "StockDiv"
     URL_FORMAT = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
+    HEADS = [u'公告日期',u'分红年度',u'送股',u'转增',u'派息',u'股权登记日',u'除权除息日',u'红股上市日',u'dummy']
+
+    def _check_df_valid(self,df):
+        time_str = utils.to_str(df.loc[0][0])
+        if utils.is_ascii(time_str):
+            try:
+                arrow.get(time_str,'YYYY-MM-DD')
+            except Exception:
+                return False
+
+            return True
+        else:
+            return False
+
+
 
     def __init__(self, code, **kwargs):
         self.code = code
+        self.df = pd.DataFrame()
         super(StockDivInfo, self).__init__(**kwargs)
 
     def _get_start_url(self):
         return StockDivInfo.URL_FORMAT.format(self.code)
 
-    def _on_html_response(self, soup):
-        logging.debug(soup)
+    def _on_response(self, data):
+        dfs = pd.read_html(data, attrs={"class": "table_bg001 border_box limit_sale"})
+        df = dfs[0]
+        if self._check_df_valid(df):
+            df.columns = StockDivInfo.HEADS
+            logger.debug(df)
+        return
 
+    @run_once
+    def get_stock_div_info(self):
+
+        return self.df
 
 
 
@@ -200,7 +227,7 @@ class GetGBJGInfo(object):
 
     @classmethod
     def _normalize_str(cls,_str):
-        uniString = utils._to_unicode(_str)
+        uniString = utils.to_unicode(_str)
         uniString = uniString.replace(u"\u00A0", "")
         return uniString
 

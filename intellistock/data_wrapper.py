@@ -14,7 +14,7 @@ import config as cf
 from database import DataBase
 from http_cache import HttpCache
 from intellistock.trade.get_k_data import GetKData
-from intellistock.trade.get_basic_info import GetBasicInfo
+from intellistock.trade.get_basic_info import GetBasicInfo,StockDivInfo
 from intellistock.trade.trade_checking import *
 from intellistock.trade.get_new_stock_list import NewStockData
 
@@ -29,32 +29,28 @@ class DataWrapper:
 
     def interface_test(self):
 
-        isTradingDay = StockCalDay("2015-06-10").is_trading_day()
-        isTradingTime = StockTradeTime().is_trading_time()
-        logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay,isTradingTime))
-        return
 
-        TradeChecking.check_is_trading()
         date_list = ["2015-06-10","2016-06-10","2017-06-10"]
         for date in date_list:
-            Trading = TradeChecking.check_trading_day(date)
-            logging.debug("Trading:{}".format(Trading))
+            isTradingDay = StockCalDay(date).is_trading_day()
+            isTradingTime = StockTradeTime().is_trading_time()
+            logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay, isTradingTime))
 
         stock_list = ['000002','300619','300414', '600519', '002839', '603039']
         for _code in stock_list:
-            #GetBasicInfo.get_FHPG_info(_code)
+            df = StockDivInfo(_code).get_stock_div_info()
             #GetBasicInfo.get_GBJG_info(_code)
             pass
 
         #NewStockData.get_new_stock_data()
 
-
-        for _code in stock_list:
-            start_day = "2016-04-08"
-            end_day = arrow.now().format("YYYY-MM-DD")
-            GetKData.get_k_data_by_day(code=_code,k_type=GetKData.KDayType.DAY,
-                                       start_day=start_day, end_day=end_day,fq_type=GetKData.FQType.QFQ)
-
+        #
+        # for _code in stock_list:
+        #     start_day = "2016-04-08"
+        #     end_day = arrow.now().format("YYYY-MM-DD")
+        #     GetKData.get_k_data_by_day(code=_code,k_type=GetKData.KDayType.DAY,
+        #                                start_day=start_day, end_day=end_day,fq_type=GetKData.FQType.QFQ)
+        #
 
 
 
