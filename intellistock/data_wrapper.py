@@ -30,8 +30,9 @@ class DataWrapper:
     def interface_test(self):
 
         isTradingDay = StockCalDay("2015-06-10").is_trading_day()
-        isTrading = StockTradeTime().is_trading()
-
+        isTradingTime = StockTradeTime().is_trading_time()
+        logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay,isTradingTime))
+        return
 
         TradeChecking.check_is_trading()
         date_list = ["2015-06-10","2016-06-10","2017-06-10"]
