@@ -14,7 +14,7 @@ import config as cf
 from database import DataBase
 from http_cache import HttpCache
 from intellistock.trade.get_k_data import GetKData
-from intellistock.trade.get_basic_info import GetBasicInfo,StockDivInfo
+from intellistock.trade.get_basic_info import *
 from intellistock.trade.trade_checking import *
 from intellistock.trade.get_new_stock_list import NewStockData
 
@@ -38,8 +38,8 @@ class DataWrapper:
 
         stock_list = ['000002','300619','300414', '600519', '002839', '603039']
         for _code in stock_list:
-            df = StockDivInfo(_code).get_stock_div_info()
-            #GetBasicInfo.get_GBJG_info(_code)
+            #StockDivInfo(_code).get_df()
+            StockStructureInfo(_code).get_df()
             pass
 
         #NewStockData.get_new_stock_data()

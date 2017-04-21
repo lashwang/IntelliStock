@@ -23,11 +23,6 @@ class GetBasicInfo(object):
         pass
 
     @classmethod
-    def get_FHPG_info(cls,code):
-        return GetFHPGInfo.get_FHPG_info(code)
-
-
-    @classmethod
     def get_GBJG_info(cls,code):
         return GetGBJGInfo.get_GBJG_info(code)
 
@@ -68,115 +63,62 @@ class StockDivInfo(SpiderBase):
         return
 
     @run_once
-    def get_stock_div_info(self):
-
+    def get_df(self):
         return self.df
 
 
+class StockStructureInfo(SpiderBase):
+    name = "StockStructure"
+    URL_FORMAT = "http://stock.finance.qq.com/corp1/stk_struct.php?zqdm={}"
 
-class GetFHPGInfo(object):
-
-
-    URL_FORMAT = 'http://quotes.money.163.com/f10/fhpg_{}.html#01d05'
-    OUTPUT_HEADERS = [u"分红年度",u"除权除息日",u"送股",u"转增",u"派息"]
-    OUTPUT_FORMAT = [datetime,datetime,float,float,float]
-
-    def __init__(self):
-        pass
-
-
-    @classmethod
-    def _is_head(cls,row):
-        _parent = row.parent
-        if _parent.name == "thead":
-            return True
-        return False
-
-    @classmethod
-    def _get_head(cls,row):
-        heads = []
-        all_th = row.find_all("th")
-        for th in all_th:
-            if th.get('colspan') is not None:
-                continue
-            heads.append(th.text)
-
-        return heads
+    def __init__(self, code, **kwargs):
+        self.code = code
+        self.df = pd.DataFrame()
+        self.page = 0
+        self.total_page = -1
+        super(StockStructureInfo, self).__init__(**kwargs)
 
 
-    @classmethod
-    def _parse_FHPG_cols(cls,cols):
-        data = []
+    def _parse_total_page(self,soup):
+        tables = soup.find_all("table")
+        head = tables[1]
+        rows = head.find_all("td")
+        last_row = rows[-1].find('a')
+        if last_row is not None:
+            url = last_row.get('href')
+            logger.debug("url is {}".format(url))
+            parsed = urlparse.urlparse(url)
+            page = urlparse.parse_qs(parsed.query)['type'][0]
+            logger.debug("total page is {}, origin URL is {}".format(page,url))
+        else:
+            logger.debug("total page is zero")
+            page = 0
 
+        return int(page)
 
-        if len(cols) != 8:
-            return data
+    def _on_response(self, data):
+        dfs = pd.read_html(data)
+        df = dfs[-1]
+        df = df.T
+        if self.total_page == -1:
+            self.total_page = self._parse_total_page(BeautifulSoup(data, "lxml"))
 
+        self.page = self.page + 1
+        self.df = self.df.append(df)
+        logger.debug(self.df)
 
-        for val in cols:
-            data.append(val.text)
+        # if self.page <= self.total_page:
+        #     url = StockStructureInfo.URL_FORMAT.format(self.code) + "&type={}".format(self.page)
+        #     yield super(StockStructureInfo,self)._request(url)
 
-        return data
+        return
 
-    @classmethod
-    def _normalise_heads(cls,heads):
-        _line_1 = heads[0]
-        _line_2 = reversed(heads[1])
-        for _val in _line_2:
-            _line_1.insert(2,_val)
+    def _get_start_url(self):
+        return StockStructureInfo.URL_FORMAT.format(self.code)
 
-
-        return _line_1
-
-    @classmethod
-    def _to_pandas_format(cls,heads,rows):
-        if len(rows) == 0:
-            return pd.DataFrame()
-        return pd.DataFrame(rows, columns=heads)
-
-    @classmethod
-    def get_FHPG_info(cls,code):
-        '''
-        获得分红配股信息
-        '''
-        if code is None:
-            logger.error('the stock code is empty')
-            return None
-
-        url = cls.URL_FORMAT.format(code)
-        html = HttpCache().Request(url)
-
-        soup = BeautifulSoup(html,"lxml")
-        table = soup.find("table", attrs={"class": "table_bg001 border_box limit_sale"})
-
-        rows = table.find_all("tr")
-
-        heads = []
-        all_rows = []
-
-        for row in rows:
-            if not cls._is_head(row):
-                cols = row.find_all("td")
-                one_row = cls._parse_FHPG_cols(cols)
-                if len(one_row) > 0:
-                    all_rows.append(one_row)
-            else:
-                #logger.debug(row)
-                heads.append(cls._get_head(row))
-
-        heads = cls._normalise_heads(heads)
-        #logger.debug(heads)
-        #logger.debug(all_rows)
-
-        df = cls._to_pandas_format(heads,all_rows)
-        if len(df) != 0:
-            df = df[list(cls.OUTPUT_HEADERS)]
-            df = utils._normalise_colomn_format(df, cls.OUTPUT_HEADERS, cls.OUTPUT_FORMAT)
-
-
-        logger.debug(df)
-        return df
-
+    @run_once
+    def get_df(self):
+        return self.df
 
 class GetGBJGInfo(object):
     '''

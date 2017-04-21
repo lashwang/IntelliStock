@@ -76,13 +76,14 @@ class SpiderBase(object):
     def _start(self):
         logger.debug("_start,cache={},cache_timeout={}".format(self._cache,self._cache_timeout))
         url = self._get_start_url()
-        data = HttpCache().Request(url,self._cache,self._cache_timeout)
-        self._on_response(data)
+        self._request(url)
         self.started = True
         return
 
-
-
+    def _request(self,url):
+        logger.debug("Call request, url:{}".format(url))
+        data = HttpCache().Request(url, self._cache, self._cache_timeout)
+        self._on_response(data)
 
 
 @six.add_metaclass(abc.ABCMeta)
