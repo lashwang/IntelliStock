@@ -38,7 +38,7 @@ class DataWrapper:
 
         stock_list = ['000002','300619','300414', '600519', '002839', '603039']
         for _code in stock_list:
-            #StockDivInfo(_code).get_df()
+            StockDivInfo(_code).get_df()
             StockStructureInfo(_code).get_df()
             pass
 
