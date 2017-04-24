@@ -16,7 +16,7 @@ from http_cache import HttpCache
 from intellistock.trade.get_k_data import GetKData
 from intellistock.trade.get_basic_info import *
 from intellistock.trade.trade_checking import *
-from intellistock.trade.get_new_stock_list import NewStockData
+from intellistock.trade.get_new_stock_list import *
 
 
 
@@ -29,12 +29,11 @@ class DataWrapper:
 
     def interface_test(self):
 
-
-        date_list = ["2015-06-10","2016-06-10","2017-06-10"]
-        for date in date_list:
-            isTradingDay = StockCalDay(date).is_trading_day()
-            isTradingTime = StockTradeTime().is_trading_time()
-            logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay, isTradingTime))
+        # date_list = ["2015-06-10","2016-06-10","2017-06-10"]
+        # for date in date_list:
+        #     # isTradingDay = StockCalDay(date).is_trading_day()
+        #     # isTradingTime = StockTradeTime().is_trading_time()
+        #     # logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay, isTradingTime))
 
         stock_list = ['000002','300619','300414', '600519', '002839', '603039']
         for _code in stock_list:

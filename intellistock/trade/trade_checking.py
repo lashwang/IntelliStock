@@ -24,12 +24,13 @@ class StockCalDay(SpiderBase):
 
         self.cache_timeout = 7*24
 
+
     def _get_start_url(self):
-        url = StockCalDay.CAL_DAY_URL.format(year=self._cal.year)
+        url = self.cls.CAL_DAY_URL.format(year=self._cal.year)
         return url
 
 
-    def _on_response(self,data):
+    def _parse(self, data):
         self._cal_list = ast.literal_eval(data)
         self._trade_day = self._check_trading_day()
 
@@ -59,7 +60,7 @@ class StockTradeTime(SpiderBase):
     def _get_start_url(self):
         return StockTradeTime.CHECK_IF_TRADING_URL
 
-    def _on_response(self, data):
+    def _parse(self, data):
         data = data.split('=')[1]
         data = data.split('"')[1]
         data = data.split('|')[2]

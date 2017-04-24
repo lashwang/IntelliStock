@@ -8,71 +8,102 @@ import time
 from intellistock import config as cf
 from datetime import datetime
 import utils
+from intellistock.trade import *
+
 
 logger = logging.getLogger(__name__)
 
 
-
-class NewStockData(object):
+class NewStockList(SpiderBase):
     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
     QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
-    NEW_STOCK_HEADERS = ["fxj","fxsyl","fxzs","mzyqy","sclx","sgdm","sgrq","sgsx","ssrq","wsfx","zqdm","zqjc","zql"]
-    NEW_STOCK_HEADERS_TRANS = [u"发行价", u"发行市盈率", u"发行总数", u"每中一签约", u"发行地", u"申购代码", u"申购日期",
-                               u"申购上限", u"上市日期", u"网上发行", u"中签代码",u"股票简称", u"中签率"]
+    def __init__(self, name=None, **kwargs):
+        self.page = 1
+        self.total_pages = -1
+        self.df = pd.DataFrame()
+        super(NewStockList, self).__init__(name, **kwargs)
 
-    NEW_STOCK_OUTPUT_HEADERS = [u"申购日期",u"上市日期",u"股票简称",u"中签代码",u"发行价",u"发行市盈率",u"网上发行",u"发行总数"]
-
-    NEW_STOCK_OUTPUT_FORMATER = [datetime,datetime,str,str,float,float,float,float]
-
-    def __init__(self):
-        pass
-
-    @classmethod
-    def _get_new_stock_url(cls,_page = 1,_page_size = QQ_XINGU_DEFAULT_PAGE_SIZE):
-        return cls.QQ_XINGU_URL.format(_page,_page_size)
-
-    @classmethod
-    def _normalize_output_data(cls,df):
-        df.columns = cls.NEW_STOCK_HEADERS_TRANS
-        df = df[cls.NEW_STOCK_OUTPUT_HEADERS]
-        return df
-
-
-    @classmethod
-    def _get_new_stock_list(cls,_page = 1):
-        url = cls._get_new_stock_url(_page)
-        lines = HttpCache().Request(url)
-        if len(lines) < 100:  # no data
-            return None
-        lines = lines.split('=')[1]
+    def _parse(self, data):
+        lines = data.split('=')[1]
         js = json.loads(lines)
-        #logging.debug(js)
-        data = pd.DataFrame(js['data']['data'])
-        totalPages = js['data']['totalPages']
-        return {'totalPages':totalPages,'data':data}
+        self.df = pd.DataFrame(js['data']['data'])
+        self.totalPages = js['data']['totalPages']
+        self.page = self.page + 1
 
-    @classmethod
-    def _get_new_stock_data(cls):
-        pageIndex = 1
-        totalPages = 0
-        ret = cls._get_new_stock_list(pageIndex)
-        totalPages = ret['totalPages']
-        df = ret['data']
-        logging.debug(totalPages)
 
-        while pageIndex < totalPages:
-            pageIndex = pageIndex + 1
-            ret = cls._get_new_stock_list(pageIndex)
-            df = df.append(ret['data'])
-            time.sleep(cf.REQUEST_DELAY)
+    def _get_start_url(self):
+        return NewStockList.QQ_XINGU_URL.format(self.page,NewStockList.QQ_XINGU_DEFAULT_PAGE_SIZE)
 
-        df = cls._normalize_output_data(df)
-        df = utils._normalise_colomn_format(df,cls.NEW_STOCK_OUTPUT_HEADERS,cls.NEW_STOCK_OUTPUT_FORMATER)
-        logging.debug(df)
-        return df
+    @run_once
+    def get_new_stock_list(self):
+        logger.debug(self.df)
+        return self.df
 
-    @classmethod
-    def get_new_stock_data(cls):
-        return cls._get_new_stock_data()
+# class NewStockData(object):
+#     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
+#                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
+#     QQ_XINGU_DEFAULT_PAGE_SIZE = 100
+#
+#     NEW_STOCK_HEADERS = ["fxj","fxsyl","fxzs","mzyqy","sclx","sgdm","sgrq","sgsx","ssrq","wsfx","zqdm","zqjc","zql"]
+#     NEW_STOCK_HEADERS_TRANS = [u"发行价", u"发行市盈率", u"发行总数", u"每中一签约", u"发行地", u"申购代码", u"申购日期",
+#                                u"申购上限", u"上市日期", u"网上发行", u"中签代码",u"股票简称", u"中签率"]
+#
+#     NEW_STOCK_OUTPUT_HEADERS = [u"申购日期",u"上市日期",u"股票简称",u"中签代码",u"发行价",u"发行市盈率",u"网上发行",u"发行总数"]
+#
+#     NEW_STOCK_OUTPUT_FORMATER = [datetime,datetime,str,str,float,float,float,float]
+#
+#     def __init__(self):
+#         pass
+#
+#     @classmethod
+#     def _get_new_stock_url(cls,_page = 1,_page_size = QQ_XINGU_DEFAULT_PAGE_SIZE):
+#         return cls.QQ_XINGU_URL.format(_page,_page_size)
+#
+#     @classmethod
+#     def _normalize_output_data(cls,df):
+#         df.columns = cls.NEW_STOCK_HEADERS_TRANS
+#         df = df[cls.NEW_STOCK_OUTPUT_HEADERS]
+#         return df
+#
+#
+#     @classmethod
+#     def _get_new_stock_list(cls,_page = 1):
+#         url = cls._get_new_stock_url(_page)
+#         lines = HttpCache().Request(url)
+#         if len(lines) < 100:  # no data
+#             return None
+#         lines = lines.split('=')[1]
+#         js = json.loads(lines)
+#         #logging.debug(js)
+#         data = pd.DataFrame(js['data']['data'])
+#         totalPages = js['data']['totalPages']
+#         return {'totalPages':totalPages,'data':data}
+#
+#     @classmethod
+#     def _get_new_stock_data(cls):
+#         pageIndex = 1
+#         totalPages = 0
+#         ret = cls._get_new_stock_list(pageIndex)
+#         totalPages = ret['totalPages']
+#         df = ret['data']
+#         logging.debug(totalPages)
+#
+#         while pageIndex < totalPages:
+#             pageIndex = pageIndex + 1
+#             ret = cls._get_new_stock_list(pageIndex)
+#             df = df.append(ret['data'])
+#             time.sleep(cf.REQUEST_DELAY)
+#
+#         df = cls._normalize_output_data(df)
+#         df = utils._normalise_colomn_format(df,cls.NEW_STOCK_OUTPUT_HEADERS,cls.NEW_STOCK_OUTPUT_FORMATER)
+#         logging.debug(df)
+#         return df
+#
+#     @classmethod
+#     def get_new_stock_data(cls):
+#         return cls._get_new_stock_data()
+#
+#
+

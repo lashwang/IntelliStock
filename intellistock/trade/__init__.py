@@ -6,7 +6,7 @@ import six
 import logging
 from intellistock.http_cache import HttpCache
 from bs4 import BeautifulSoup
-
+import inspect
 
 
 logger = logging.getLogger(__name__)
@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 def run(fun):
     def wrapper(self, *args, **kwargs):
+        logger.debug("run:{}".format(fun))
         self._start(*args, **kwargs)
         return fun(self, *args, **kwargs)
 
@@ -22,6 +23,7 @@ def run(fun):
 
 def run_once(fun):
     def wrapper(self, *args, **kwargs):
+        logger.debug("run_once:{}".format(fun))
         if not self.started:
             self._start(*args, **kwargs)
         return fun(self, *args, **kwargs)
@@ -46,15 +48,20 @@ class SpiderBase(object):
         self.started = False
         self._cache = True
         self._cache_timeout = None
-
+        self.cls = object.__name__
 
     @abc.abstractmethod
     def _get_start_url(self):
-        return
+        pass
 
     @abc.abstractmethod
-    def _on_response(self,data):
-        return
+    def _parse(self, data):
+        '''
+        Paser http response data(str or unicode)
+        :param data: 
+        :return:If need to parse next page, then return next page url, else return None  
+        '''
+        pass
 
     @property
     def cache(self):
@@ -76,30 +83,23 @@ class SpiderBase(object):
     def _start(self):
         logger.debug("_start,cache={},cache_timeout={}".format(self._cache,self._cache_timeout))
         url = self._get_start_url()
-        self._request(url)
+        for url in self._request(url):
+            logger.debug(url)
+
         self.started = True
         return
 
     def _request(self,url):
         logger.debug("Call request, url:{}".format(url))
-        data = HttpCache().Request(url, self._cache, self._cache_timeout)
-        self._on_response(data)
+        while True:
+            data = HttpCache().Request(url, self._cache, self._cache_timeout)
+            url = self._parse(data)
+            if url is not None:
+                logger.debug("looping to the next url:{}".format(url))
+                yield url
+            else:
+                logger.debug("no further page need to parse!!")
+                return
 
 
-@six.add_metaclass(abc.ABCMeta)
-class HTMLStockSpider(SpiderBase):
-    def __init__(self,**kwargs):
-        super(HTMLStockSpider,self).__init__(**kwargs)
-
-    def _on_response(self, html):
-        soup = BeautifulSoup(html, "lxml")
-        self._on_html_response(soup)
-
-    @abc.abstractmethod
-    def _get_start_url(self):
-        return
-
-    @abc.abstractmethod
-    def _on_html_response(self, soup):
-        return
 
