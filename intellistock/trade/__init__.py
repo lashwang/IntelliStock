@@ -44,11 +44,11 @@ class SpiderBase(object):
             raise ValueError(error)
 
         self.__dict__.update(kwargs)
-
+        self.cls = self.__class__
         self.started = False
         self._cache = True
         self._cache_timeout = None
-        self.cls = object.__name__
+
 
     @abc.abstractmethod
     def _get_start_url(self):

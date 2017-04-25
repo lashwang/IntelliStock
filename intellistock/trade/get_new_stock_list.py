@@ -20,7 +20,7 @@ class NewStockList(SpiderBase):
                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
     QQ_XINGU_DEFAULT_PAGE_SIZE = 100
 
-    def __init__(self, name=None, **kwargs):
+    def __init__(self,**kwargs):
         self.page = 1
         self.total_pages = -1
         self.df = pd.DataFrame()
@@ -36,12 +36,12 @@ class NewStockList(SpiderBase):
         self.page = self.page + 1
 
         if self.page <= self.total_pages:
-            return self.__class__.QQ_XINGU_URL.format(self.page,self.__class__.QQ_XINGU_DEFAULT_PAGE_SIZE)
+            return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
 
         return None
 
     def _get_start_url(self):
-        return self.__class__.QQ_XINGU_URL.format(self.page,NewStockList.QQ_XINGU_DEFAULT_PAGE_SIZE)
+        return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
 
     @run_once
     def get_new_stock_list(self):

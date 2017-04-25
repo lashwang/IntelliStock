@@ -58,7 +58,7 @@ class StockTradeTime(SpiderBase):
         self.cache_timeout = 1
 
     def _get_start_url(self):
-        return StockTradeTime.CHECK_IF_TRADING_URL
+        return self.cls.CHECK_IF_TRADING_URL
 
     def _parse(self, data):
         data = data.split('=')[1]

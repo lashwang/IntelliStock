@@ -43,13 +43,13 @@ class StockDivInfo(SpiderBase):
         super(StockDivInfo, self).__init__(**kwargs)
 
     def _get_start_url(self):
-        return StockDivInfo.URL_FORMAT.format(self.code)
+        return self.cls.URL_FORMAT.format(self.code)
 
     def _parse(self, data):
         dfs = pd.read_html(data, attrs={"class": "table_bg001 border_box limit_sale"})
         df = dfs[0]
         if self._check_df_valid(df):
-            df.columns = StockDivInfo.HEADS
+            df.columns = self.cls.HEADS
             logger.debug(df)
         return
 
@@ -103,22 +103,14 @@ class StockStructureInfo(SpiderBase):
         logger.debug("page is:{}".format(self.page))
 
         if self.page <= self.total_page:
-            url = self.__class__.URL_FORMAT.format(self.code) + "&type={}".format(self.page)
+            url = self.cls.URL_FORMAT.format(self.code) + "&type={}".format(self.page)
             return url
         else:
             return None
 
 
     def _get_start_url(self):
-        return self.__class__.URL_FORMAT.format(self.code)
-
-
-    def _has_next_page(self):
-        return super(StockStructureInfo, self)._has_next_page()
-
-    def _get_next_page_url(self):
-        super(StockStructureInfo, self)._get_next_page_url()
-
+        return self.cls.URL_FORMAT.format(self.code)
 
 
     @run_once
