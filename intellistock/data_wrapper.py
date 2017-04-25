@@ -35,13 +35,14 @@ class DataWrapper:
         #     # isTradingTime = StockTradeTime().is_trading_time()
         #     # logger.debug("isTradingDay:{},isTradingTime:{}".format(isTradingDay, isTradingTime))
 
-        stock_list = ['000002','300619','300414', '600519', '002839', '603039']
-        for _code in stock_list:
-            StockDivInfo(_code).get_df()
-            StockStructureInfo(_code).get_df()
-            pass
+        # stock_list = ['000002','300619','300414', '600519', '002839', '603039']
+        # for _code in stock_list:
+        #     StockDivInfo(_code).get_df()
+        #     StockStructureInfo(_code).get_df()
+        #     pass
 
-        #NewStockData.get_new_stock_data()
+        NewStockList().get_new_stock_list()
+
 
         #
         # for _code in stock_list:

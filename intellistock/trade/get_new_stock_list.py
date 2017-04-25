@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class NewStockList(SpiderBase):
+    name = "NewStockQQ"
     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
     QQ_XINGU_DEFAULT_PAGE_SIZE = 100
@@ -23,18 +24,24 @@ class NewStockList(SpiderBase):
         self.page = 1
         self.total_pages = -1
         self.df = pd.DataFrame()
-        super(NewStockList, self).__init__(name, **kwargs)
+        super(NewStockList, self).__init__(**kwargs)
 
     def _parse(self, data):
         lines = data.split('=')[1]
         js = json.loads(lines)
-        self.df = pd.DataFrame(js['data']['data'])
-        self.totalPages = js['data']['totalPages']
+        df = pd.DataFrame(js['data']['data'])
+        self.df = self.df.append(df)
+        if self.total_pages == -1:
+            self.total_pages = js['data']['totalPages']
         self.page = self.page + 1
 
+        if self.page <= self.total_pages:
+            return self.__class__.QQ_XINGU_URL.format(self.page,self.__class__.QQ_XINGU_DEFAULT_PAGE_SIZE)
+
+        return None
 
     def _get_start_url(self):
-        return NewStockList.QQ_XINGU_URL.format(self.page,NewStockList.QQ_XINGU_DEFAULT_PAGE_SIZE)
+        return self.__class__.QQ_XINGU_URL.format(self.page,NewStockList.QQ_XINGU_DEFAULT_PAGE_SIZE)
 
     @run_once
     def get_new_stock_list(self):
