@@ -14,6 +14,11 @@ from intellistock.trade import *
 logger = logging.getLogger(__name__)
 
 
+'''
+1. 从凤凰网获得股票数据
+'''
+
+
 class FQType(Enum):
     QFQ = 'qfq' #前复权
     HFQ = 'hfq' #后复权
