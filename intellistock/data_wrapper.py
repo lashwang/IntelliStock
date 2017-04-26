@@ -41,8 +41,9 @@ class DataWrapper:
         #     StockStructureInfo(_code).get_df()
         #     pass
 
-        NewStockList().get_new_stock_list()
-
+        #NewStockList().get_new_stock_list()
+        df = ts.get_hist_data('300414')
+        logger.debug(df)
 
         #
         # for _code in stock_list:
