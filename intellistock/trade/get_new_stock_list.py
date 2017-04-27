@@ -1,15 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import logging
-from intellistock.http_cache import HttpCache
 import json
-import pandas as pd
-import time
-from intellistock import config as cf
-from datetime import datetime
-import utils
-from intellistock.trade import *
 
+import pandas as pd
+
+from intellistock.trade import *
 
 logger = logging.getLogger(__name__)
 

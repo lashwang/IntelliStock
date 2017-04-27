@@ -1,15 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from intellistock.http_cache import HttpCache
-import logging
-import pandas as pd
-from StringIO import StringIO
-import os
-import arrow
 import ast
-from intellistock.trade import *
 
+import arrow
+
+from intellistock.trade import *
 
 logger = logging.getLogger(__name__)
 

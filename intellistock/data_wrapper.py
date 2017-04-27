@@ -1,24 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import json
-import logging
-import time
-from StringIO import StringIO
-
-import arrow
-import pandas as pd
 import tushare as ts
 
-import config as cf
-from database import DataBase
-from http_cache import HttpCache
-from intellistock.trade.get_k_data import GetKData
 from intellistock.trade.get_basic_info import *
-from intellistock.trade.trade_checking import *
 from intellistock.trade.get_new_stock_list import *
-
-
+from intellistock.trade.trade_checking import *
 
 logger = logging.getLogger(__name__)
 

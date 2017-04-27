@@ -1,15 +1,13 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import logging
-import utils
+import json
+
 import pandas as pd
 from enum import Enum
-import arrow
-from intellistock.http_cache import HttpCache
-import json
-from intellistock.trade import *
 
+import utils
+from intellistock.trade import *
 
 logger = logging.getLogger(__name__)
 
@@ -19,26 +17,108 @@ logger = logging.getLogger(__name__)
 '''
 
 
+class KDayType(Enum):
+    DAY = 0
+    WEEK = 1
+    MONTH = 2
+
 class FQType(Enum):
-    QFQ = 'qfq' #前复权
-    HFQ = 'hfq' #后复权
-    BFQ = 'nfq'    #不复权
+    '''
+    QFQ - 前复权
+    HFQ - 后复权
+    NFQ - 不复权
+    '''
+    QFQ = 0
+    HFQ = 1
+    NFQ = 2
 
-class DataType(Enum):
-    pass
-
-class KDataParam(object):
-    def __init__(self):
-        self.code = None
-        self.start = None
-        self.end = None
-        self.fq = FQType.QFQ
-
-
+@six.add_metaclass(abc.ABCMeta)
+class KDataByDayBase(SpiderBase):
+    SZ_START_CODE = ["000","002","300"]
+    SH_START_CODE = ["60"]
 
 
-class KDataBase(SpiderBase):
-    pass
+    def __init__(self,code = '',
+                 day_type = KDayType.DAY,
+                 fq_type = FQType.QFQ,
+                 date_from = None,
+                 date_to = None,
+                 **kwargs):
+        '''
+        
+        :param code:  字符类型,
+        :param day_type: KDayType
+        :param fq_type: FQType
+        :param date_from: 'YYYY-MM-DD'
+        :param date_to: 'YYYY-MM-DD'
+        :param kwargs: 
+        '''
+        name = self.__class__.__name__
+        self.code = code
+        self.day_type = day_type
+        self.fq_type = fq_type
+        self.date_from = date_from
+        self.date_to = date_to
+        self.df = pd.DataFrame()
+
+        super(KDataByDayBase, self).__init__(name, **kwargs)
+
+    def _get_start_url(self):
+        return self._get_url()
+
+    def _parse(self, data):
+        return self._on_parse(data)
+
+
+    @abc.abstractmethod
+    def _on_parse(self, data):
+        pass
+
+    @abc.abstractmethod
+    def _get_url(self):
+        pass
+
+    @run_once
+    def load_k_data(self):
+        return self.df
+
+    def _code_format(self,code):
+        code = utils.to_str(code)
+        if code[0:3] in self.cls.SZ_START_CODE:
+            return "sz" + code
+
+        if code[0:2] in self.cls.SH_START_CODE:
+            return "sh" + code
+
+        raise SyntaxError(code)
+
+
+class KDataFromIFeng(KDataByDayBase):
+    '''
+    http://api.finance.ifeng.com/akdaily/?code=sz000002&type=last
+    http://api.finance.ifeng.com/akweekly/?code=sz000002&type=last
+    http://api.finance.ifeng.com/akmonthly/?code=sz000002&type=last
+    '''
+    URL = 'http://api.finance.ifeng.com/{}/?code={}&type=last'
+    DAY_TYPE = ['akdaily','akweekly','akmonthly']
+    DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change',
+                         'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']
+
+    def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from=None, date_to=None, **kwargs):
+        super(KDataFromIFeng, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
+
+    def _get_url(self):
+        cls = self.cls
+        return cls.URL.format(cls.DAY_TYPE[self.day_type.value], self._code_format(self.code))
+
+    def _on_parse(self, data):
+        js = json.loads(data)
+        js = js['record']
+        df = pd.DataFrame(js,columns=self.cls.DAY_PRICE_COLUMNS)
+        self.df = self.df.append(df)
+
+
+
 
 
 # class GetKData(object):

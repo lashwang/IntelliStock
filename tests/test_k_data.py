@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-from intellistock.trade import *
-import tushare as ts
+from intellistock.trade.get_k_data import *
+import test_case
 
 
 class TestKData(unittest.TestCase):
+    kdata_ifeng = KDataFromIFeng(test_case.stock_list[0])
+    kdata_ifeng.load_k_data()
+
     pass
 
 

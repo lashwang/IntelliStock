@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import logging
-import tushare as ts
 
+import tushare as ts
 
 logger = logging.getLogger(__name__)
 
