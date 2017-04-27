@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 
 '''
 1. 从凤凰网获得股票数据
+2. 修正数据
+3. 从腾讯网获取数据
+4. 比较
 '''
 
 
@@ -104,7 +107,7 @@ class KDataFromIFeng(KDataByDayBase):
     DAY_PRICE_COLUMNS = ['date', 'open', 'high', 'close', 'low', 'volume', 'price_change', 'p_change',
                          'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']
 
-    def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from=None, date_to=None, **kwargs):
+    def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
         super(KDataFromIFeng, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
 
     def _get_url(self):
@@ -117,9 +120,39 @@ class KDataFromIFeng(KDataByDayBase):
         df = pd.DataFrame(js,columns=self.cls.DAY_PRICE_COLUMNS)
         self.df = self.df.append(df)
 
+class KDataFromQQ(KDataByDayBase):
+    URL_FORMAT = "http://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?p=1&param={code},{k_type},{start_day},{end_day},{number},{fq}"
 
+    DAY_TYPE = ['day', 'week', 'month']
 
+    FQ_TYPE = ['qfq','hfq', '']
 
+    def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
+        super(KDataFromQQ, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
+
+    def _get_url(self):
+        cls = self.cls
+        return cls.URL_FORMAT.format(code=self._code_format(self.code),
+                                            k_type=cls.DAY_TYPE[self.day_type.value],
+                                            start_day=self.date_from,
+                                            end_day=self.date_to,
+                                            number=600,
+                                            fq=cls.FQ_TYPE[self.fq_type.value])
+
+    def _on_parse(self, data):
+        js = json.loads(data)
+        '''
+        <type 'list'>: [u'version', u'prec', u'qt', u'qfqday', u'mx_price']
+        '''
+        js = js['data'][self._code_format(self.code)]
+
+        js = js[js.keys()[3]]
+
+        df = pd.DataFrame(js)
+
+        self.df = self.df.append(df)
+
+        pass
 
 # class GetKData(object):
 #
