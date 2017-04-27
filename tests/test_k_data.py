@@ -9,24 +9,27 @@ import pandas as pd
 
 test_case_list = merge_test_case()
 
-class TestKDataFromIFeng(unittest.TestCase):
-    
+class TestKDataBase(object):
 
-    for test_case in test_case_list:
-        try:
-            kdata_ifeng = KDataFromIFeng(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
-            kdata_ifeng.load_k_data()
-        except ValueError,error:
-            pass
+    def test_data(self,cls):
+        for test_case in test_case_list:
+            try:
+                kdata_object = cls(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
+                df = kdata_object.load_k_data()
+                print test_case,len(df)
+                self.assertFalse(len(df) < 1)
+            except Exception,error:
+                print error
 
 
-class TestKDataFromQQ(unittest.TestCase):
-    for test_case in test_case_list:
-        try:
-            kdata_qq = KDataFromQQ(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
-            kdata_qq.load_k_data()
-        except pd.PandasError,error:
-            pass
+class TestKDataFromIFeng(unittest.TestCase,TestKDataBase):
+    def test_data(self):
+        super(TestKDataFromIFeng,self).test_data(KDataFromIFeng)
+
+
+class TestKDataFromQQ(unittest.TestCase,TestKDataBase):
+    def test_data(self):
+        super(TestKDataFromQQ,self).test_data(KDataFromQQ)
 
 
 
