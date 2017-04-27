@@ -1,7 +1,6 @@
 import unittest
 import tushare as ts
 import logging
-import test_case
 
 logger = logging.getLogger(__name__)
 

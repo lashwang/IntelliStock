@@ -3,18 +3,31 @@
 
 import unittest
 from intellistock.trade.get_k_data import *
-import test_case
+from tests import *
+import pandas as pd
 
 
-class TestKData(unittest.TestCase):
-    kdata_ifeng = KDataFromIFeng(test_case.stock_list[0])
-    kdata_ifeng.load_k_data()
+test_case_list = merge_test_case()
 
-    kdata_qq = KDataFromQQ(test_case.stock_list[0])
-    kdata_qq.load_k_data()
+class TestKDataFromIFeng(unittest.TestCase):
+    
+
+    for test_case in test_case_list:
+        try:
+            kdata_ifeng = KDataFromIFeng(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
+            kdata_ifeng.load_k_data()
+        except ValueError,error:
+            pass
 
 
-    pass
+class TestKDataFromQQ(unittest.TestCase):
+    for test_case in test_case_list:
+        try:
+            kdata_qq = KDataFromQQ(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
+            kdata_qq.load_k_data()
+        except pd.PandasError,error:
+            pass
+
 
 
 

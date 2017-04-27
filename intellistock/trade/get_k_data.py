@@ -57,14 +57,15 @@ class KDataByDayBase(SpiderBase):
         :param kwargs: 
         '''
         name = self.__class__.__name__
+        super(KDataByDayBase, self).__init__(name, **kwargs)
         self.code = code
         self.day_type = day_type
         self.fq_type = fq_type
         self.date_from = date_from
         self.date_to = date_to
         self.df = pd.DataFrame()
+        self.code_format = self._code_format(code)
 
-        super(KDataByDayBase, self).__init__(name, **kwargs)
 
     def _get_start_url(self):
         return self._get_url()
@@ -108,11 +109,13 @@ class KDataFromIFeng(KDataByDayBase):
                          'ma5', 'ma10', 'ma20', 'v_ma5', 'v_ma10', 'v_ma20']
 
     def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
+        if fq_type != FQType.QFQ:
+            raise ValueError('The ifeng only support QFQ mode!!!')
         super(KDataFromIFeng, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
 
     def _get_url(self):
         cls = self.cls
-        return cls.URL.format(cls.DAY_TYPE[self.day_type.value], self._code_format(self.code))
+        return cls.URL.format(cls.DAY_TYPE[self.day_type.value], self.code_format)
 
     def _on_parse(self, data):
         js = json.loads(data)
@@ -129,10 +132,12 @@ class KDataFromQQ(KDataByDayBase):
 
     def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
         super(KDataFromQQ, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
+        self.day_str = self.cls.DAY_TYPE[self.day_type.value]
+        self.fq_str = self.cls.FQ_TYPE[self.fq_type.value]
 
     def _get_url(self):
         cls = self.cls
-        return cls.URL_FORMAT.format(code=self._code_format(self.code),
+        return cls.URL_FORMAT.format(code=self.code_format,
                                             k_type=cls.DAY_TYPE[self.day_type.value],
                                             start_day=self.date_from,
                                             end_day=self.date_to,
@@ -144,9 +149,17 @@ class KDataFromQQ(KDataByDayBase):
         '''
         <type 'list'>: [u'version', u'prec', u'qt', u'qfqday', u'mx_price']
         '''
-        js = js['data'][self._code_format(self.code)]
+        js = js['data'][self.code_format]
 
-        js = js[js.keys()[3]]
+        keys = js.keys()
+
+        key = [x for x in keys if self.day_str in x]
+
+        if len(key) != 1:
+            raise ValueError("unknow response")
+
+
+        js = js[key[0]]
 
         df = pd.DataFrame(js)
 
