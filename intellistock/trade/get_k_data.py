@@ -36,7 +36,7 @@ class FQType(Enum):
     NFQ = 2
 
 @six.add_metaclass(abc.ABCMeta)
-class KDataByDayBase(SpiderBase):
+class KDataByDayBase(SpiderBase,TimeSequenceData):
     SZ_START_CODE = ["000","002","300"]
     SH_START_CODE = ["60"]
 
@@ -63,7 +63,6 @@ class KDataByDayBase(SpiderBase):
         self.fq_type = fq_type
         self.date_from = date_from
         self.date_to = date_to
-        self.df = pd.DataFrame()
         self.code_format = self._code_format(code)
 
 
@@ -95,6 +94,12 @@ class KDataByDayBase(SpiderBase):
             return "sh" + code
 
         raise SyntaxError(code)
+
+    def get_time_from(self):
+        super(KDataByDayBase, self).get_time_from()
+
+    def get_time_to(self):
+        super(KDataByDayBase, self).get_time_to()
 
 
 class KDataFromIFeng(KDataByDayBase):

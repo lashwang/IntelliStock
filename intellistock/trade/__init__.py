@@ -7,7 +7,7 @@ import logging
 from intellistock.http_cache import HttpCache
 from bs4 import BeautifulSoup
 import inspect
-
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class SpiderBase(object):
         self.started = False
         self._cache = True
         self._cache_timeout = None
-
+        self.df = pd.DataFrame()
 
     @abc.abstractmethod
     def _get_start_url(self):
@@ -101,5 +101,19 @@ class SpiderBase(object):
                 logger.debug("no further page need to parse!!")
                 return
 
+    def get_df(self):
+        return self.df
 
 
+@six.add_metaclass(abc.ABCMeta)
+class TimeSequenceData(object):
+    @abc.abstractmethod
+    def get_time_from(self):
+        pass
+
+    @abc.abstractmethod
+    def get_time_to(self):
+        pass
+
+    def get_time_interval(self):
+        pass

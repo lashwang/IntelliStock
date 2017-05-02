@@ -39,7 +39,6 @@ class StockDivInfo(SpiderBase):
 
     def __init__(self, code, **kwargs):
         self.code = code
-        self.df = pd.DataFrame()
         super(StockDivInfo, self).__init__(**kwargs)
 
     def _get_start_url(self):

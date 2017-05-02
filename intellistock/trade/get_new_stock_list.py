@@ -39,9 +39,38 @@ class NewStockList(SpiderBase):
         return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
 
     @run_once
-    def get_new_stock_list(self):
+    def load_data(self):
         logger.debug(self.df)
         return self.df
+
+    def get_unlisted_stock(self):
+        '''
+        未上市新股
+        :return: 
+        '''
+        pass
+
+    def get_listed_stock(self):
+        '''
+        已上市新股
+        :return: 
+        '''
+        pass
+
+    def get_unbroken_stock_list(self):
+        '''
+        已上市未破板新股
+        :return: 
+        '''
+        pass
+
+    def get_broken_stock_list(self):
+        '''
+        已上市已破板新股
+        :return: 
+        '''
+        pass
+
 
 # class NewStockData(object):
 #     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
