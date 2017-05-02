@@ -64,10 +64,8 @@ class StockStructureInfo(SpiderBase):
 
     def __init__(self, code, **kwargs):
         self.code = code
-        self.df = pd.DataFrame()
         self.page = 0
         self.total_page = -1
-
         super(StockStructureInfo, self).__init__(self,**kwargs)
 
 

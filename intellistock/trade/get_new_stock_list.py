@@ -18,7 +18,6 @@ class NewStockList(SpiderBase):
     def __init__(self,**kwargs):
         self.page = 1
         self.total_pages = -1
-        self.df = pd.DataFrame()
         super(NewStockList, self).__init__(**kwargs)
 
     def _parse(self, data):
