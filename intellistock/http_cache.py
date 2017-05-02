@@ -12,7 +12,7 @@ import config as cf
 import file_utils
 from database import DataBase
 import logging
-
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -22,8 +22,15 @@ class HttpCache:
 
     HTTP_CACHE_INDEX_TABLE = 'cache_index'
 
+
     def __init__(self):
-        file_utils.mkdir(cf.CACHE_FOLDER)
+        file_utils.mkdir(self._get_cache_folder())
+
+
+    def _get_cache_folder(self):
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        ROOT_DIR = os.path.dirname(ROOT_DIR)
+        return os.path.join(ROOT_DIR,cf.CACHE_FOLDER)
 
     def Request(self, url_, from_cache = True, cache_timeout_minute = None):
         logger.debug('HttpCache, url is ' + url_)
@@ -37,8 +44,10 @@ class HttpCache:
             return data
 
         try:
-            request = Request(url_)
-            data = urlopen(request, timeout=10).read()
+            # request = Request(url_)
+            # data = urlopen(request, timeout=10).read()
+            r = requests.get(url_)
+            data = r.content
             self._save_to_cache(data,url_)
             self._save_index_file(url_)
         except Exception, error:
@@ -48,7 +57,7 @@ class HttpCache:
         return data
 
     def _save_to_cache(self,data_,url_):
-        cache_path = os.path.join(cf.CACHE_FOLDER,self._url_to_filename(url_))
+        cache_path = os.path.join(self._get_cache_folder(),self._url_to_filename(url_))
         logger.debug(cache_path)
 
         with open(cache_path, 'wb') as f:
@@ -65,7 +74,7 @@ class HttpCache:
         if index:
             if self._is_cache_valid(index,cache_timeout_):
                 try:
-                    with open(os.path.join(cf.CACHE_FOLDER,filename),'r') as f:
+                    with open(os.path.join(self._get_cache_folder(),filename),'r') as f:
                         data = f.read()
                 except Exception,error:
                     logger.error(str(error))

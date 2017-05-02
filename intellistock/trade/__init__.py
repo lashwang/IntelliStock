@@ -80,9 +80,14 @@ class SpiderBase(object):
     def cache_timeout(self,value):
         self._cache_timeout = value
 
+    @run_once
+    def load_data(self):
+        pass
+
     def _start(self):
         logger.debug("_start,cache={},cache_timeout={}".format(self._cache,self._cache_timeout))
         url = self._get_start_url()
+        self.start_url = url
         for url in self._request(url):
             logger.debug(url)
 
@@ -92,6 +97,7 @@ class SpiderBase(object):
     def _request(self,url):
         logger.debug("Call request, url:{}".format(url))
         while True:
+            self.current_url = url
             data = HttpCache().Request(url, self._cache, self._cache_timeout)
             url = self._parse(data)
             if url is not None:

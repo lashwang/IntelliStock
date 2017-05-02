@@ -19,7 +19,20 @@ def to_unicode(_str):
     if isinstance(_str, unicode):
         return _str
 
-    return _str.decode('utf-8')
+
+
+    try:
+        _unicode = _str.decode('utf-8')
+        return _unicode
+    except Exception,error:
+        logger.error(error)
+
+    try:
+        _unicode = _str.decode('gbk')
+        return _unicode
+    except Exception, error:
+        logger.error(error)
+
 
 def to_str(_str):
     if isinstance(_str,str):

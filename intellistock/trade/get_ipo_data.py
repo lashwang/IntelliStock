@@ -3,13 +3,68 @@
 import json
 
 import pandas as pd
+from bs4 import BeautifulSoup
+
 
 from intellistock.trade import *
+from intellistock.trade.utils import *
 
 logger = logging.getLogger(__name__)
 
 
-class NewStockList(SpiderBase):
+class IPOData(SpiderBase):
+    name = "IPO_10jqka"
+    START_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/'
+    NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/{page}/order/desc/ajax/1/'
+
+
+    def __init__(self, **kwargs):
+        super(IPOData, self).__init__(**kwargs)
+        self.page = 1
+        self.total_pages = -1
+
+
+    def _read_html(self,html):
+        headers = html.find(class_='m_table').find('thead').find_all('th')
+        header_list = [head.text.strip() for head in headers]
+        tr_list = html.find(class_='m_tbd').find_all('tr')
+        all_data = []
+        for tr in tr_list:
+            line_data = [td.text.strip() for td in tr.find_all('td')]
+            if len(line_data) != len(header_list):
+                raise ValueError
+            all_data.append(line_data)
+        return pd.DataFrame(all_data,columns=header_list)
+
+    def _parse(self, data):
+        html = BeautifulSoup(data,'lxml')
+        self.page = self.page + 1
+        if self.current_url == self.start_url:
+            tag = html.find_all(class_="page_info")
+            if len(tag) < 1:
+                raise ValueError("can't parse url :" + self.start_url)
+            page_info = tag[0].text
+            self.total_pages = int(page_info.split('/')[1])
+            df = self._read_html(html)
+            self.df = self.df.append(df)
+            return self.cls.NEXT_URL.format(page=self.page)
+        else:
+            df = self._read_html(html)
+            self.df = self.df.append(df)
+
+            if self.page <= self.total_pages:
+                return self.cls.NEXT_URL.format(page=self.page)
+            else:
+                return None
+
+
+    def _get_start_url(self):
+        return self.cls.START_URL
+
+
+
+
+class IPODataQQ(SpiderBase):
     name = "NewStockQQ"
     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
@@ -18,7 +73,7 @@ class NewStockList(SpiderBase):
     def __init__(self,**kwargs):
         self.page = 1
         self.total_pages = -1
-        super(NewStockList, self).__init__(**kwargs)
+        super(IPODataQQ, self).__init__(**kwargs)
 
     def _parse(self, data):
         lines = data.split('=')[1]

@@ -4,7 +4,7 @@
 import tushare as ts
 
 from intellistock.trade.get_basic_info import *
-from intellistock.trade.get_new_stock_list import *
+from intellistock.trade.get_ipo_data import *
 from intellistock.trade.trade_checking import *
 
 logger = logging.getLogger(__name__)
