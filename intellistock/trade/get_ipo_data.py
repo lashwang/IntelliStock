@@ -13,7 +13,21 @@ logger = logging.getLogger(__name__)
 
 
 class IPOData(object):
-    pass
+
+    def __init__(self,start_time = "2015-01-01"):
+        self.start_time = start_time
+        self.df = pd.DataFrame()
+
+    def get_df(self):
+        ths1 = IPODataTHS1(self.start_time)
+        ths1.load_data()
+        code = ths1.get_last_code()
+        ths2 = IPODataTHS2(code)
+        ths2.load_data()
+        df = ths2.get_df()
+        logger.debug(df)
+
+
 
 
 
@@ -21,8 +35,10 @@ class IPODataTHS1(SpiderBase):
     name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsr/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsr/field/SSRQ/order/desc/page/{page}/ajax/1/'
+    KEY_SSRQ = u'上市日期'
 
-    def __init__(self,start_time = "2015-01-01", **kwargs):
+
+    def __init__(self,start_time, **kwargs):
         super(IPODataTHS1, self).__init__(**kwargs)
         self.page = 1
         self.total_pages = -1
@@ -41,7 +57,7 @@ class IPODataTHS1(SpiderBase):
             self.total_pages = self._get_total_pages(html)
         df = pd.read_html(data,encoding='gbk')[0]
         self.df = self.df.append(df)
-        dates = df[u'上市日期']
+        dates = df[self.cls.KEY_SSRQ]
         if dates.min() < self.start_time:
             return
         if self.page <= self.total_pages:
@@ -51,16 +67,24 @@ class IPODataTHS1(SpiderBase):
         return self.cls.START_URL
 
 
-class IPODataTHS0(SpiderBase):
+    def get_last_code(self):
+        return self.df.iloc[-1][1]
+
+    def _on_parse_finished(self):
+        self.df = self.df[self.df[self.cls.KEY_SSRQ] >= self.start_time]
+
+
+class IPODataTHS2(SpiderBase):
     name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/{page}/order/desc/ajax/1/'
+    KEY_GPDM = u'股票代码'
 
-
-    def __init__(self, **kwargs):
-        super(IPODataTHS0, self).__init__(**kwargs)
+    def __init__(self,code,**kwargs):
+        super(IPODataTHS2, self).__init__(**kwargs)
         self.page = 1
         self.total_pages = -1
+        self.code = str(code)
 
 
     def _read_html(self,html):
@@ -84,85 +108,84 @@ class IPODataTHS0(SpiderBase):
                 raise ValueError("can't parse url :" + self.start_url)
             page_info = tag[0].text
             self.total_pages = int(page_info.split('/')[1])
-            df = self._read_html(html)
-            self.df = self.df.append(df)
+        df = self._read_html(html)
+        self.df = self.df.append(df)
+        if self.code in list(df[self.cls.KEY_GPDM]):
+            return None
+
+        if self.page <= self.total_pages:
             return self.cls.NEXT_URL.format(page=self.page)
         else:
-            df = self._read_html(html)
-            self.df = self.df.append(df)
-
-            if self.page <= self.total_pages:
-                return self.cls.NEXT_URL.format(page=self.page)
-            else:
-                return None
+            return None
 
 
     def _get_start_url(self):
         return self.cls.START_URL
 
-
-
-
-class IPODataQQ(SpiderBase):
-    name = "NewStockQQ"
-    QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
-                   'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
-    QQ_XINGU_DEFAULT_PAGE_SIZE = 100
-
-    def __init__(self,**kwargs):
-        self.page = 1
-        self.total_pages = -1
-        super(IPODataQQ, self).__init__(**kwargs)
-
-    def _parse(self, data):
-        lines = data.split('=')[1]
-        js = json.loads(lines)
-        df = pd.DataFrame(js['data']['data'])
-        self.df = self.df.append(df)
-        if self.total_pages == -1:
-            self.total_pages = js['data']['totalPages']
-        self.page = self.page + 1
-
-        if self.page <= self.total_pages:
-            return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
-
-        return None
-
-    def _get_start_url(self):
-        return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
-
-    @run_once
-    def load_data(self):
-        logger.debug(self.df)
-        return self.df
-
-    def get_unlisted_stock(self):
-        '''
-        未上市新股
-        :return: 
-        '''
+    def _on_parse_finished(self):
         pass
 
-    def get_listed_stock(self):
-        '''
-        已上市新股
-        :return: 
-        '''
-        pass
 
-    def get_unbroken_stock_list(self):
-        '''
-        已上市未破板新股
-        :return: 
-        '''
-        pass
-
-    def get_broken_stock_list(self):
-        '''
-        已上市已破板新股
-        :return: 
-        '''
-        pass
+# class IPODataQQ(SpiderBase):
+#     name = "NewStockQQ"
+#     QQ_XINGU_URL = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?' \
+#                    'type=all&page={}&psize={}&col=sgrq&order=desc&_var=v_xgql'
+#     QQ_XINGU_DEFAULT_PAGE_SIZE = 100
+#
+#     def __init__(self,**kwargs):
+#         self.page = 1
+#         self.total_pages = -1
+#         super(IPODataQQ, self).__init__(**kwargs)
+#
+#     def _parse(self, data):
+#         lines = data.split('=')[1]
+#         js = json.loads(lines)
+#         df = pd.DataFrame(js['data']['data'])
+#         self.df = self.df.append(df)
+#         if self.total_pages == -1:
+#             self.total_pages = js['data']['totalPages']
+#         self.page = self.page + 1
+#
+#         if self.page <= self.total_pages:
+#             return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
+#
+#         return None
+#
+#     def _get_start_url(self):
+#         return self.cls.QQ_XINGU_URL.format(self.page,self.cls.QQ_XINGU_DEFAULT_PAGE_SIZE)
+#
+#     @run_once
+#     def load_data(self):
+#         logger.debug(self.df)
+#         return self.df
+#
+#     def get_unlisted_stock(self):
+#         '''
+#         未上市新股
+#         :return:
+#         '''
+#         pass
+#
+#     def get_listed_stock(self):
+#         '''
+#         已上市新股
+#         :return:
+#         '''
+#         pass
+#
+#     def get_unbroken_stock_list(self):
+#         '''
+#         已上市未破板新股
+#         :return:
+#         '''
+#         pass
+#
+#     def get_broken_stock_list(self):
+#         '''
+#         已上市已破板新股
+#         :return:
+#         '''
+#         pass
 
 
 # class NewStockData(object):

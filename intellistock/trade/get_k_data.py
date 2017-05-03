@@ -101,6 +101,9 @@ class KDataByDayBase(SpiderBase,TimeSequenceData):
     def get_time_to(self):
         super(KDataByDayBase, self).get_time_to()
 
+    def _on_parse_finished(self):
+        pass
+
 
 class KDataFromIFeng(KDataByDayBase):
     '''

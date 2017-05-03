@@ -63,6 +63,11 @@ class SpiderBase(object):
         '''
         pass
 
+
+    @abc.abstractmethod
+    def _on_parse_finished(self):
+        pass
+
     @property
     def cache(self):
         return self._cache
@@ -105,6 +110,7 @@ class SpiderBase(object):
                 yield url
             else:
                 logger.debug("no further page need to parse!!")
+                self._on_parse_finished()
                 return
 
     def get_df(self):
