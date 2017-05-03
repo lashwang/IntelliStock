@@ -12,14 +12,53 @@ from intellistock.trade.utils import *
 logger = logging.getLogger(__name__)
 
 
-class IPOData(SpiderBase):
-    name = "IPO_10jqka"
+class IPOData(object):
+    pass
+
+
+
+class IPODataTHS1(SpiderBase):
+    name = __name__
+    START_URL = 'http://data.10jqka.com.cn/ipo/xgsr/'
+    NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsr/field/SSRQ/order/desc/page/{page}/ajax/1/'
+
+    def __init__(self,start_time = "2015-01-01", **kwargs):
+        super(IPODataTHS1, self).__init__(**kwargs)
+        self.page = 1
+        self.total_pages = -1
+        self.start_time = start_time
+
+    def _get_total_pages(self,html):
+        tag = html.find_all(class_='page_info')
+        tag = tag[0].text
+        return int(tag.split('/')[1])
+
+
+    def _parse(self, data):
+        self.page = self.page +1
+        if self.current_url == self.cls.START_URL:
+            html = BeautifulSoup(data, 'lxml')
+            self.total_pages = self._get_total_pages(html)
+        df = pd.read_html(data,encoding='gbk')[0]
+        self.df = self.df.append(df)
+        dates = df[u'上市日期']
+        if dates.min() < self.start_time:
+            return
+        if self.page <= self.total_pages:
+            return self.cls.NEXT_URL.format(page=self.page)
+
+    def _get_start_url(self):
+        return self.cls.START_URL
+
+
+class IPODataTHS0(SpiderBase):
+    name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/{page}/order/desc/ajax/1/'
 
 
     def __init__(self, **kwargs):
-        super(IPOData, self).__init__(**kwargs)
+        super(IPODataTHS0, self).__init__(**kwargs)
         self.page = 1
         self.total_pages = -1
 
