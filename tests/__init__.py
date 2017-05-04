@@ -3,6 +3,8 @@
 import logging
 from intellistock.trade.get_k_data import *
 import itertools
+import os
+from intellistock import file_utils
 
 logger = logging.getLogger(__name__)
 
@@ -15,3 +17,12 @@ day_type_list = list(KDayType)
 
 def merge_test_case():
     return list(itertools.product(stock_list,day_type_list,fq_type_list))
+
+
+def get_output_folder():
+    ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(ROOT_DIR,'output')
+
+
+
+file_utils.mkdir(get_output_folder())

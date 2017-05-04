@@ -114,7 +114,7 @@ class IPODataTHS2(SpiderBase):
         return pd.DataFrame(all_data,columns=header_list)
 
     def _parse(self, data):
-        html = BeautifulSoup(data,'lxml')
+        html = BeautifulSoup(markup=data, features='lxml',from_encoding='GBK')
         self.page = self.page + 1
         if self.current_url == self.start_url:
             tag = html.find_all(class_="page_info")
