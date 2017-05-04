@@ -6,6 +6,7 @@ from tests import *
 
 class MyTestCase(unittest.TestCase):
 
+    @unittest.skip
     def test_html_extract(self):
         url = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/12/order/desc/ajax/1/'
         r = requests.get(url)

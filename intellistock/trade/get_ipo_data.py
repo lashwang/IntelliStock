@@ -8,11 +8,15 @@ from bs4 import BeautifulSoup
 
 from intellistock.trade import *
 from intellistock.trade.utils import *
+import traceback
 
 logger = logging.getLogger(__name__)
 
 
 class IPOData(object):
+
+    KEY_SSRQ = u'上市日期'
+    KEY_GPDM = u'股票代码'
 
     def __init__(self,start_time = "2015-01-01"):
         self.start_time = start_time
@@ -24,11 +28,12 @@ class IPOData(object):
         code = ths1.get_last_code()
         ths2 = IPODataTHS2(code)
         ths2.load_data()
-        df = pd.DataFrame()
         df1 = ths1.get_df()
         df2 = ths2.get_df()
 
-        return df
+        df_final = reduce(lambda left, right: pd.merge(left, right, on=IPOData.KEY_GPDM), [df1,df2])
+
+        return df_final
 
     @staticmethod
     def parse_html(raw_html):
@@ -41,8 +46,7 @@ class IPODataTHS1(SpiderBase):
     name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsr/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsr/field/SSRQ/order/desc/page/{page}/ajax/1/'
-    KEY_SSRQ = u'上市日期'
-    KEY_GPDM = u'股票代码'
+
 
     def __init__(self,start_time, **kwargs):
         super(IPODataTHS1, self).__init__(**kwargs)
@@ -61,9 +65,10 @@ class IPODataTHS1(SpiderBase):
         if self.current_url == self.cls.START_URL:
             html = IPOData.parse_html(data)
             self.total_pages = self._get_total_pages(html)
-        df = pd.read_html(data,encoding='gbk')[0]
+
+        df = pd.read_html(data,flavor='bs4',encoding='GBK')[0]
         self.df = self.df.append(df)
-        dates = df[self.cls.KEY_SSRQ]
+        dates = df[IPOData.KEY_SSRQ]
         if dates.min() < self.start_time:
             return
         if self.page <= self.total_pages:
@@ -74,11 +79,11 @@ class IPODataTHS1(SpiderBase):
 
 
     def get_last_code(self):
-        return self.df.iloc[-1][self.cls.KEY_GPDM]
+        return self.df.iloc[-1][IPOData.KEY_GPDM]
 
     def _on_parse_finished(self):
-        KEY_GPDM = self.cls.KEY_GPDM
-        KEY_SSRQ = self.cls.KEY_SSRQ
+        KEY_GPDM = IPOData.KEY_GPDM
+        KEY_SSRQ = IPOData.KEY_SSRQ
         headers = [u'股票代码',u'股票简称',u'上市日期']
         df = self.df
         df = df[df[KEY_SSRQ] >= self.start_time]
@@ -93,7 +98,6 @@ class IPODataTHS2(SpiderBase):
     name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/{page}/order/desc/ajax/1/'
-    KEY_GPDM = u'股票代码'
 
 
 
@@ -127,7 +131,7 @@ class IPODataTHS2(SpiderBase):
             self.total_pages = int(page_info.split('/')[1])
         df = self._read_html(html)
         self.df = self.df.append(df)
-        if self.code in list(df[self.cls.KEY_GPDM]):
+        if self.code in list(df[IPOData.KEY_GPDM]):
             return None
 
         if self.page <= self.total_pages:
@@ -140,7 +144,7 @@ class IPODataTHS2(SpiderBase):
         return self.cls.START_URL
 
     def _on_parse_finished(self):
-        KEY_GPDM = self.cls.KEY_GPDM
+        KEY_GPDM = IPOData.KEY_GPDM
         headers = list(self.df.columns)
         '''
         0 = {unicode} u'股票代码'
