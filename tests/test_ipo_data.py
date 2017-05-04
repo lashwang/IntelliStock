@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
         r = requests.get(url)
         with open(os.path.join(get_output_folder(),'test.html'), 'wb') as f:
             f.write(r.content)
-        html = BeautifulSoup(markup=r.content, features='lxml',from_encoding='GBK')
+        html = IPOData.parse_html(r.content)
         df = IPODataTHS2('002752')._read_html(html)
         print df
 

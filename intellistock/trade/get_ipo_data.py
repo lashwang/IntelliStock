@@ -30,6 +30,9 @@ class IPOData(object):
 
         return df
 
+    @staticmethod
+    def parse_html(raw_html):
+        return BeautifulSoup(markup=raw_html, features='lxml',from_encoding='GBK')
 
 
 
@@ -56,7 +59,7 @@ class IPODataTHS1(SpiderBase):
     def _parse(self, data):
         self.page = self.page +1
         if self.current_url == self.cls.START_URL:
-            html = BeautifulSoup(data, 'lxml')
+            html = IPOData.parse_html(data)
             self.total_pages = self._get_total_pages(html)
         df = pd.read_html(data,encoding='gbk')[0]
         self.df = self.df.append(df)
@@ -114,7 +117,7 @@ class IPODataTHS2(SpiderBase):
         return pd.DataFrame(all_data,columns=header_list)
 
     def _parse(self, data):
-        html = BeautifulSoup(markup=data, features='lxml',from_encoding='GBK')
+        html = IPOData.parse_html(data)
         self.page = self.page + 1
         if self.current_url == self.start_url:
             tag = html.find_all(class_="page_info")
