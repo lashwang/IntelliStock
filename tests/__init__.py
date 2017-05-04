@@ -15,6 +15,8 @@ fq_type_list = list(FQType)
 day_type_list = list(KDayType)
 
 
+
+
 def merge_test_case():
     return list(itertools.product(stock_list,day_type_list,fq_type_list))
 
@@ -23,6 +25,11 @@ def get_output_folder():
     ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(ROOT_DIR,'output')
 
-
-
 file_utils.mkdir(get_output_folder())
+
+
+def save_to_excel(df,file,label):
+    handler =  pd.ExcelWriter(os.path.join(get_output_folder(),file), engine='xlsxwriter')
+    df.to_excel(handler, sheet_name=label)
+    handler.save()
+

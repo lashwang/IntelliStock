@@ -32,6 +32,8 @@ class IPOData(object):
         df2 = ths2.get_df()
 
         df_final = reduce(lambda left, right: pd.merge(left, right, on=IPOData.KEY_GPDM), [df1,df2])
+        df_final.set_index(IPOData.KEY_SSRQ)
+
 
         return df_final
 
