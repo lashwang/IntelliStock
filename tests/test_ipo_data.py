@@ -4,6 +4,7 @@ import requests
 
 class MyTestCase(unittest.TestCase):
 
+    @unittest.skip
     def test_html_extract(self):
         url = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/12/order/desc/ajax/1/'
         r = requests.get(url)
@@ -12,7 +13,7 @@ class MyTestCase(unittest.TestCase):
 
 
     def test_new_stock_data(self):
-        ipo_data = IPOData()
+        ipo_data = IPOData(start_time='2017-01-01')
         df = ipo_data.get_df()
         print df
 

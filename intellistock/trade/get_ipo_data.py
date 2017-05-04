@@ -24,8 +24,11 @@ class IPOData(object):
         code = ths1.get_last_code()
         ths2 = IPODataTHS2(code)
         ths2.load_data()
-        df = ths2.get_df()
-        logger.debug(df)
+        df = pd.DataFrame()
+        df1 = ths1.get_df()
+        df2 = ths2.get_df()
+
+        return df
 
 
 
@@ -36,7 +39,7 @@ class IPODataTHS1(SpiderBase):
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsr/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsr/field/SSRQ/order/desc/page/{page}/ajax/1/'
     KEY_SSRQ = u'上市日期'
-
+    KEY_GPDM = u'股票代码'
 
     def __init__(self,start_time, **kwargs):
         super(IPODataTHS1, self).__init__(**kwargs)
@@ -68,17 +71,28 @@ class IPODataTHS1(SpiderBase):
 
 
     def get_last_code(self):
-        return self.df.iloc[-1][1]
+        return self.df.iloc[-1][self.cls.KEY_GPDM]
 
     def _on_parse_finished(self):
-        self.df = self.df[self.df[self.cls.KEY_SSRQ] >= self.start_time]
+        KEY_GPDM = self.cls.KEY_GPDM
+        KEY_SSRQ = self.cls.KEY_SSRQ
+        headers = [u'股票代码',u'股票简称',u'上市日期']
+        df = self.df
+        df = df[df[KEY_SSRQ] >= self.start_time]
+        if df[KEY_SSRQ].min() < self.start_time:
+            raise ValueError
+        df = df[headers]
+        df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
 
+        self.df = df
 
 class IPODataTHS2(SpiderBase):
     name = __name__
     START_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/'
     NEXT_URL = 'http://data.10jqka.com.cn/ipo/xgsgyzq/board/all/field/SGDATE/page/{page}/order/desc/ajax/1/'
     KEY_GPDM = u'股票代码'
+
+
 
     def __init__(self,code,**kwargs):
         super(IPODataTHS2, self).__init__(**kwargs)
@@ -123,7 +137,35 @@ class IPODataTHS2(SpiderBase):
         return self.cls.START_URL
 
     def _on_parse_finished(self):
-        pass
+        KEY_GPDM = self.cls.KEY_GPDM
+        headers = list(self.df.columns)
+        '''
+        0 = {unicode} u'股票代码'
+        1 = {unicode} u'股票简称'
+        2 = {unicode} u'发行总数（万股）'
+        3 = {unicode} u'网上发行（万股）'
+        4 = {unicode} u'发行价格'
+        5 = {unicode} u'发行市盈率'
+        6 = {unicode} u'行业市盈率'
+        7 = {unicode} u'涨停数量'
+        '''
+        headers.remove(u'申购代码')
+        headers.remove(u'申购上限（万股）')
+        headers.remove(u'顶格申购需配市值（万元）')
+        headers.remove(u'申购日期')
+        headers.remove(u'中签率（%）')
+        headers.remove(u'中签号')
+        headers.remove(u'中签缴款日期')
+        headers.remove(u'上市日期')
+        headers.remove(u'打新收益（元）')
+        headers.remove(u'新股详情')
+        df = self.df
+        df = df[headers]
+        df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
+
+
+        self.df = df
+
 
 
 # class IPODataQQ(SpiderBase):

@@ -70,4 +70,5 @@ def _normalise_colomn_format(_df,_header,_formator):
 
     return _df
 
+FORMAT_STOCK_CODE = lambda x:str(x).zfill(6)
 
