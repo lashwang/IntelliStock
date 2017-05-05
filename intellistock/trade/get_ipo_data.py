@@ -86,7 +86,7 @@ class IPODataTHS1(SpiderBase):
     def _on_parse_finished(self):
         KEY_GPDM = IPOData.KEY_GPDM
         KEY_SSRQ = IPOData.KEY_SSRQ
-        headers = [u'股票代码',u'股票简称',u'上市日期']
+        headers = [u'股票代码',u'上市日期']
         df = self.df
         df = df[df[KEY_SSRQ] >= self.start_time]
         if df[KEY_SSRQ].min() < self.start_time:
@@ -94,7 +94,7 @@ class IPODataTHS1(SpiderBase):
         df = df[headers]
         df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
 
-        self.df = df
+        self.df = df 
 
 class IPODataTHS2(SpiderBase):
     name = __name__
@@ -171,8 +171,6 @@ class IPODataTHS2(SpiderBase):
         df = self.df
         df = df[headers]
         df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
-
-
         self.df = df
 
 
