@@ -41,7 +41,10 @@ class IPOData(object):
     def parse_html(raw_html):
         return BeautifulSoup(markup=raw_html, features='lxml',from_encoding='GBK')
 
-
+    @staticmethod
+    def format_stock_code(df):
+        df.loc[:, IPOData.KEY_GPDM] = df.loc[:, IPOData.KEY_GPDM].map(FORMAT_STOCK_CODE)
+        return df
 
 
 class IPODataTHS1(SpiderBase):
@@ -92,9 +95,9 @@ class IPODataTHS1(SpiderBase):
         if df[KEY_SSRQ].min() < self.start_time:
             raise ValueError
         df = df[headers]
-        df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
+        df= IPOData.format_stock_code(df)
 
-        self.df = df 
+        self.df = df
 
 class IPODataTHS2(SpiderBase):
     name = __name__
@@ -170,7 +173,7 @@ class IPODataTHS2(SpiderBase):
         headers.remove(u'新股详情')
         df = self.df
         df = df[headers]
-        df[KEY_GPDM] = df[KEY_GPDM].map(FORMAT_STOCK_CODE)
+        df = IPOData.format_stock_code(df)
         self.df = df
 
 
