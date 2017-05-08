@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class DBBase(object):
     DB_FOLDER = os.path.join(cf.EXPORT_PATH_DIR, 'db')
 
-    def __new__(cls):
+    def __new__(cls,table_name):
         file_utils.mkdir(cls._get_db_folder())
         return super(DBBase, cls).__new__(cls)
 
