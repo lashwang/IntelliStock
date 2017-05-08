@@ -9,19 +9,22 @@ import file_utils
 import logging
 import os
 import config as cf
-
+from intellistock import *
 
 logger = logging.getLogger(__name__)
 
 @six.add_metaclass(abc.ABCMeta)
 class DBBase(object):
     DB_FOLDER = os.path.join(cf.EXPORT_PATH_DIR, 'db')
+    DB_FILE_NAME = 'stock_data.db'
+
 
 
     def __init__(self,table_name):
         self.cls = self.__class__
         file_utils.mkdir(self._get_db_folder())
-        _db_path = os.path.join(self._get_db_folder(), 'stock_data.db')
+        db_file_name = self.cls.DB_FILE_NAME if not check_unit_test() else 'stock_data_test.db'
+        _db_path = os.path.join(self._get_db_folder(), db_file_name)
         self.db_conn = dataset.connect('sqlite:///{}'.format(_db_path))
         self.table_name = table_name
 

@@ -5,6 +5,10 @@ from intellistock.trade.get_k_data import *
 import itertools
 import os
 from intellistock import file_utils
+from intellistock.data_base import DBBase
+import sys
+import unittest
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +19,7 @@ fq_type_list = list(FQType)
 day_type_list = list(KDayType)
 
 
-
+DBBase.DB_IN_TEST = True
 
 def merge_test_case():
     return list(itertools.product(stock_list,day_type_list,fq_type_list))
@@ -33,3 +37,8 @@ def save_to_excel(df,file,label):
     df.to_excel(handler, sheet_name=label)
     handler.save()
 
+
+class UnitTestBase(unittest.TestCase):
+    def __init__(self, methodName='runTest'):
+        super(UnitTestBase, self).__init__(methodName)
+        os.environ["UNITTEST"] = str(True)
