@@ -10,7 +10,7 @@ except ImportError:
 import base64
 import config as cf
 import file_utils
-from data_base import DataBase
+from data_base import DBBase
 import logging
 import requests
 
@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 
-class HttpCache(object):
+class HttpCache(DBBase):
 
     HTTP_CACHE_INDEX_TABLE = 'cache_index'
 
 
     def __init__(self):
         file_utils.mkdir(self._get_cache_folder())
-
+        super(HttpCache,self).__init__(HttpCache.HTTP_CACHE_INDEX_TABLE)
 
     def _get_cache_folder(self):
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -103,9 +103,9 @@ class HttpCache(object):
     def _load_index_file(self,url_):
         if url_ is None:
             raise ValueError
-        db = DataBase.get_db_connection()
+        table = self.get_db_table()
 
-        index = db[HttpCache.HTTP_CACHE_INDEX_TABLE].find_one(url=url_)
+        index = table.find_one(url=url_)
 
         return index
 
@@ -114,13 +114,7 @@ class HttpCache(object):
     def http_cache_index_upsert(self,url_ = None):
         if url_ is None:
             raise ValueError
-        db = DataBase.get_db_connection()
-        try:
-            with db:
-                table = db[HttpCache.HTTP_CACHE_INDEX_TABLE]
-                table.upsert(dict(url=url_,time=datetime.datetime.now()),['url'])
-        except Exception,error:
-            logger.error(str(error))
 
+        self.upset(dict(url=url_,time=datetime.datetime.now()),['url'])
 
 

@@ -17,24 +17,18 @@ logger = logging.getLogger(__name__)
 class DBBase(object):
     DB_FOLDER = os.path.join(cf.EXPORT_PATH_DIR, 'db')
 
-    def __new__(cls,table_name):
-        file_utils.mkdir(cls._get_db_folder())
-        return super(DBBase, cls).__new__(cls)
-
-    @classmethod
-    def _get_db_folder(cls):
-        root_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.dirname(root_dir)
-        return os.path.join(root_dir,DBBase.DB_FOLDER)
-
-
 
     def __init__(self,table_name):
         self.cls = self.__class__
-        _db_path = os.path.join(self.cls._get_db_folder(), 'stock_data.db')
+        file_utils.mkdir(self._get_db_folder())
+        _db_path = os.path.join(self._get_db_folder(), 'stock_data.db')
         self.db_conn = dataset.connect('sqlite:///{}'.format(_db_path))
         self.table_name = table_name
 
+    def _get_db_folder(self):
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        root_dir = os.path.dirname(root_dir)
+        return os.path.join(root_dir,DBBase.DB_FOLDER)
 
     def get_db_connection(self):
         return self.db_conn
@@ -43,14 +37,13 @@ class DBBase(object):
         return self.db_conn[self.table_name]
 
 
-
-class DataBase(object):
-    file_utils.mkdir(cf.STOCK_DB_FOLDER)
-    db = dataset.connect('sqlite:///{}'.format(cf.STOCK_DB_PATH))
-
-    @classmethod
-    def get_db_connection(cls):
-        return DataBase.db
+    def upset(self,row, keys):
+        try:
+            with self.db_conn:
+                table = self.db_conn[self.table_name]
+                table.upsert(row,keys)
+        except Exception,error:
+            logger.error(str(error))
 
 
 
