@@ -9,4 +9,5 @@ dataset
 arrow
 aenum
 html5lib==0.999
+openpyxl
 

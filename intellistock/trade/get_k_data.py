@@ -36,7 +36,7 @@ class FQType(Enum):
     NFQ = 2
 
 @six.add_metaclass(abc.ABCMeta)
-class KDataByDayBase(SpiderBase,TimeSequenceData):
+class KDataByDayBase(SpiderBase):
 
 
     def __init__(self,code = '',
@@ -82,11 +82,6 @@ class KDataByDayBase(SpiderBase,TimeSequenceData):
     @run_once
     def load_k_data(self):
         return self.df
-    def get_time_from(self):
-        super(KDataByDayBase, self).get_time_from()
-
-    def get_time_to(self):
-        super(KDataByDayBase, self).get_time_to()
 
     def _on_parse_finished(self):
         pass
@@ -118,6 +113,13 @@ class KDataFromIFeng(KDataByDayBase):
         df = pd.DataFrame(js,columns=self.cls.DAY_PRICE_COLUMNS)
         self.df = self.df.append(df)
 
+    def __str__(self):
+        str_format = "ifeng-{code}-{day_type}-{fq_type}"
+        return str_format.format(code=self.code,
+                                 day_type=self.cls.DAY_TYPE[self.day_type.value],
+                                 fq_type=self.day_type.value)
+
+
 class KDataFromQQ(KDataByDayBase):
     URL_FORMAT = "http://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?p=1&param={code},{k_type},{start_day},{end_day},{number},{fq}"
 
@@ -145,22 +147,22 @@ class KDataFromQQ(KDataByDayBase):
         <type 'list'>: [u'version', u'prec', u'qt', u'qfqday', u'mx_price']
         '''
         js = js['data'][self.code_format]
-
         keys = js.keys()
-
         key = [x for x in keys if self.day_str in x]
-
         if len(key) != 1:
             raise ValueError("unknow response")
-
-
         js = js[key[0]]
-
         df = pd.DataFrame(js)
-
         self.df = self.df.append(df)
-
         pass
+
+
+    def __str__(self):
+        str_format = "qq-{code}-{day_type}-{fq_type}"
+        return str_format.format(code=self.code,
+                                 day_type=self.cls.DAY_TYPE[self.day_type.value],
+                                 fq_type=self.cls.FQ_TYPE[self.day_type.value])
+
 
 # class GetKData(object):
 #

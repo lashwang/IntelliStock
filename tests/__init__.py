@@ -8,7 +8,7 @@ from intellistock import file_utils
 from intellistock.data_base import DBBase
 import sys
 import unittest
-
+from intellistock.excel_helper import ExcelHelper
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,12 @@ file_utils.mkdir(get_output_folder())
 
 
 def save_to_excel(df,file = "test.xlsx",label = "test"):
-    handler =  pd.ExcelWriter(os.path.join(get_output_folder(),file), engine='xlsxwriter')
-    df.to_excel(handler, sheet_name=label)
-    handler.close()
+    helper = ExcelHelper(get_excel_path(file))
+    helper.add(df,label=label)
+    helper.close()
+
+def get_excel_path(file="test.xlsx"):
+    return os.path.join(get_output_folder(),file)
 
 
 class UnitTestBase(unittest.TestCase):
