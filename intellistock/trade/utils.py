@@ -92,9 +92,15 @@ def code_format(code):
 def get_stock_type(code):
     code = to_str(code)
     if code[0:3] in SZ_START_CODE:
-        return "sz"
+        index = SZ_START_CODE.index(code[0:3])
+        if index == 0:
+            return u'深圳主板'
+        elif index == 1:
+            return u'深圳中小板'
+        else:
+            return u'深圳创业板'
 
     if code[0:2] in SH_START_CODE:
-        return "sh"
+        return u"上海"
 
     raise SyntaxError(code)
