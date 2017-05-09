@@ -20,12 +20,11 @@ logger = logging.getLogger(__name__)
 
 class HttpCache(DBBase):
 
-    HTTP_CACHE_INDEX_TABLE = 'cache_index'
-
+    table_name = 'cache_index'
 
     def __init__(self):
         file_utils.mkdir(self._get_cache_folder())
-        super(HttpCache,self).__init__(HttpCache.HTTP_CACHE_INDEX_TABLE)
+        super(HttpCache,self).__init__()
 
     def _get_cache_folder(self):
         ROOT_DIR = os.path.dirname(os.path.abspath(__file__))

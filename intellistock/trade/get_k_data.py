@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from enum import Enum
 
-import utils
+from utils import *
 from intellistock.trade import *
 
 logger = logging.getLogger(__name__)
@@ -37,8 +37,6 @@ class FQType(Enum):
 
 @six.add_metaclass(abc.ABCMeta)
 class KDataByDayBase(SpiderBase,TimeSequenceData):
-    SZ_START_CODE = ["000","002","300"]
-    SH_START_CODE = ["60"]
 
 
     def __init__(self,code = '',
@@ -63,7 +61,7 @@ class KDataByDayBase(SpiderBase,TimeSequenceData):
         self.fq_type = fq_type
         self.date_from = date_from
         self.date_to = date_to
-        self.code_format = self._code_format(code)
+        self.code_format = code_format(code)
 
 
     def _get_start_url(self):
@@ -84,17 +82,6 @@ class KDataByDayBase(SpiderBase,TimeSequenceData):
     @run_once
     def load_k_data(self):
         return self.df
-
-    def _code_format(self,code):
-        code = utils.to_str(code)
-        if code[0:3] in self.cls.SZ_START_CODE:
-            return "sz" + code
-
-        if code[0:2] in self.cls.SH_START_CODE:
-            return "sh" + code
-
-        raise SyntaxError(code)
-
     def get_time_from(self):
         super(KDataByDayBase, self).get_time_from()
 

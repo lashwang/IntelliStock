@@ -71,4 +71,30 @@ def _normalise_colomn_format(_df,_header,_formator):
     return _df
 
 FORMAT_STOCK_CODE = lambda x:str(x).zfill(6)
+FORMAT = lambda x: '%.2f' % x
+FORMAT4 = lambda x: '%.4f' % x
 
+SZ_START_CODE = ["000", "002", "300"]
+SH_START_CODE = ["60"]
+
+
+def code_format(code):
+    code = to_str(code)
+    if code[0:3] in SZ_START_CODE:
+        return "sz" + code
+
+    if code[0:2] in SH_START_CODE:
+        return "sh" + code
+
+    raise SyntaxError(code)
+
+
+def get_stock_type(code):
+    code = to_str(code)
+    if code[0:3] in SZ_START_CODE:
+        return "sz"
+
+    if code[0:2] in SH_START_CODE:
+        return "sh"
+
+    raise SyntaxError(code)

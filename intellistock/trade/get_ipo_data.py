@@ -13,10 +13,15 @@ import traceback
 logger = logging.getLogger(__name__)
 
 
+
 class IPOData(object):
 
     KEY_SSRQ = u'上市日期'
     KEY_GPDM = u'股票代码'
+    KEY_FXZS = u'发行总数（万股）'
+    KEY_WSFX = u'网上发行（万股）'
+    KEY_FXJG = u'发行价格'
+    KEY_FXSYL = u'发行市盈率'
 
     def __init__(self,start_time = "2015-01-01"):
         self.start_time = start_time
@@ -30,10 +35,29 @@ class IPOData(object):
         ths2.load_data()
         df1 = ths1.get_df()
         df2 = ths2.get_df()
-
         df_final = reduce(lambda left, right: pd.merge(left, right, on=IPOData.KEY_GPDM), [df1,df2])
-        df_final.set_index(IPOData.KEY_SSRQ)
+        df_final = df_final.set_index(IPOData.KEY_SSRQ)
+        float_headers = list(df_final.columns)[2:6]
+        df_final[float_headers] = df_final[float_headers].astype(float)
 
+        '''
+        Format digital data
+        '''
+        # op = float_headers[0]
+        # df_final[op] = df_final[op]/10000
+        # op = float_headers[1]
+        # df_final[op] = df_final[op]/10000
+        op = float_headers[2]
+        df_final[op] = df_final[op].map(FORMAT)
+        op = float_headers[3]
+        df_final[op] = df_final[op].map(FORMAT)
+        df_final[float_headers] = df_final[float_headers].astype(float)
+
+        '''
+        add stock type
+        '''
+        name = u'股票类型'
+        df_final[name] = df_final[IPOData.KEY_GPDM].map(lambda x:get_stock_type(x))
 
         return df_final
 
@@ -89,14 +113,13 @@ class IPODataTHS1(SpiderBase):
     def _on_parse_finished(self):
         KEY_GPDM = IPOData.KEY_GPDM
         KEY_SSRQ = IPOData.KEY_SSRQ
-        headers = [u'股票代码',u'上市日期']
+        headers = [KEY_GPDM,KEY_SSRQ]
         df = self.df
         df = df[df[KEY_SSRQ] >= self.start_time]
         if df[KEY_SSRQ].min() < self.start_time:
             raise ValueError
         df = df[headers]
         df= IPOData.format_stock_code(df)
-
         self.df = df
 
 class IPODataTHS2(SpiderBase):
@@ -161,16 +184,8 @@ class IPODataTHS2(SpiderBase):
         6 = {unicode} u'行业市盈率'
         7 = {unicode} u'涨停数量'
         '''
-        headers.remove(u'申购代码')
-        headers.remove(u'申购上限（万股）')
-        headers.remove(u'顶格申购需配市值（万元）')
-        headers.remove(u'申购日期')
-        headers.remove(u'中签率（%）')
-        headers.remove(u'中签号')
-        headers.remove(u'中签缴款日期')
-        headers.remove(u'上市日期')
-        headers.remove(u'打新收益（元）')
-        headers.remove(u'新股详情')
+        headers = [u'股票代码',u'股票简称',u'发行总数（万股）',u'网上发行（万股）',u'发行价格',u'发行市盈率']
+
         df = self.df
         df = df[headers]
         df = IPOData.format_stock_code(df)

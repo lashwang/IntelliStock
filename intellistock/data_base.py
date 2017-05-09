@@ -20,13 +20,18 @@ class DBBase(object):
 
 
 
-    def __init__(self,table_name):
+    def __init__(self):
+
+        if not getattr(self, 'table_name', None):
+            error = "{} must have a table name".format(type(self).__name__)
+            raise ValueError(error)
+
         self.cls = self.__class__
         file_utils.mkdir(self._get_db_folder())
         db_file_name = self.cls.DB_FILE_NAME if not check_unit_test() else 'stock_data_test.db'
         _db_path = os.path.join(self._get_db_folder(), db_file_name)
         self.db_conn = dataset.connect('sqlite:///{}'.format(_db_path))
-        self.table_name = table_name
+
 
     def _get_db_folder(self):
         root_dir = os.path.dirname(os.path.abspath(__file__))
