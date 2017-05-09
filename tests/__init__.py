@@ -32,10 +32,10 @@ def get_output_folder():
 file_utils.mkdir(get_output_folder())
 
 
-def save_to_excel(df,file,label):
+def save_to_excel(df,file = "test.xlsx",label = "test"):
     handler =  pd.ExcelWriter(os.path.join(get_output_folder(),file), engine='xlsxwriter')
     df.to_excel(handler, sheet_name=label)
-    handler.save()
+    handler.close()
 
 
 class UnitTestBase(unittest.TestCase):

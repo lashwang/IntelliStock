@@ -16,8 +16,9 @@ class TestKDataBase(object):
             try:
                 kdata_object = cls(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
                 df = kdata_object.load_k_data()
-                print test_case,len(df)
+                #print test_case,len(df)
                 self.assertFalse(len(df) < 1)
+                save_to_excel(df)
             except Exception,error:
                 print error
 
