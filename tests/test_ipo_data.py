@@ -1,4 +1,4 @@
-import unittest
+import unittest2
 from intellistock.trade.get_ipo_data import *
 import requests
 from tests import *
@@ -21,10 +21,10 @@ class MyTestCase(UnitTestBase):
     def test_new_stock_data(self):
         ipo_data = IPOData(start_time='2017-04-01')
         df = ipo_data.get_df()
-        save_to_excel(df,label='IPOData')
+        save_to_excel(df,file='test_ipo',label='IPOData')
 
 
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest2.main()

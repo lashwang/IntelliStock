@@ -1,4 +1,4 @@
-import unittest
+import unittest2
 from intellistock.http_cache import HttpCache
 from tests import UnitTestBase
 
@@ -19,4 +19,4 @@ class HttpCacheTestCase(UnitTestBase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest2.main()

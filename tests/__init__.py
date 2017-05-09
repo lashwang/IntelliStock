@@ -7,7 +7,7 @@ import os
 from intellistock import file_utils
 from intellistock.data_base import DBBase
 import sys
-import unittest
+import unittest2
 from intellistock.excel_helper import ExcelHelper
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ def get_excel_path(file="test.xlsx"):
     return os.path.join(get_output_folder(),file)
 
 
-class UnitTestBase(unittest.TestCase):
+class UnitTestBase(unittest2.TestCase):
     def __init__(self, methodName='runTest'):
         super(UnitTestBase, self).__init__(methodName)
         os.environ["UNITTEST"] = str(True)

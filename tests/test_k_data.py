@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import unittest
+import unittest2
 from intellistock.trade.get_k_data import *
 from tests import *
 import pandas as pd
@@ -9,10 +9,18 @@ from intellistock.excel_helper import ExcelHelper
 
 test_case_list = merge_test_case()
 
-class TestKDataBase(object):
+excel_helper = None
 
+def setUpModule():
+    global excel_helper
+    excel_helper = ExcelHelper(get_excel_path('test_stock'))
+
+def tearDownModule():
+    global excel_helper
+    excel_helper.close()
+
+class TestKDataBase(object):
     def test_data(self,cls):
-        excel_helper = ExcelHelper(get_excel_path('test_stock'))
         for test_case in test_case_list:
             try:
                 kdata_object = cls(code=test_case[0],day_type=test_case[1],fq_type=test_case[2])
@@ -22,7 +30,7 @@ class TestKDataBase(object):
                 excel_helper.add(df,label=str(kdata_object))
             except Exception,error:
                 print error
-        excel_helper.close()
+
 
 class TestKDataFromIFeng(UnitTestBase,TestKDataBase):
     def test_data(self):
@@ -37,4 +45,4 @@ class TestKDataFromQQ(UnitTestBase,TestKDataBase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest2.main()
