@@ -36,8 +36,8 @@ class IPOData(object):
         df1 = ths1.get_df()
         df2 = ths2.get_df()
         df_final = reduce(lambda left, right: pd.merge(left, right, on=IPOData.KEY_GPDM), [df1,df2])
-        df_final = df_final.set_index(IPOData.KEY_SSRQ)
-        float_headers = list(df_final.columns)[2:6]
+
+        float_headers = list(df_final.columns)[3:7]
         df_final[float_headers] = df_final[float_headers].astype(float)
 
         '''
@@ -58,6 +58,9 @@ class IPOData(object):
         '''
         name = u'股票类型'
         df_final[name] = df_final[IPOData.KEY_GPDM].map(lambda x:get_stock_type(x))
+
+        # 设置index
+        df_final = df_final.set_index(IPOData.KEY_GPDM)
 
         return df_final
 

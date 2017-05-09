@@ -22,12 +22,12 @@ class TestKDataBase(object):
                 print error
 
 
-class TestKDataFromIFeng(unittest.TestCase,TestKDataBase):
+class TestKDataFromIFeng(UnitTestBase,TestKDataBase):
     def test_data(self):
         super(TestKDataFromIFeng,self).test_data(KDataFromIFeng)
 
 
-class TestKDataFromQQ(unittest.TestCase,TestKDataBase):
+class TestKDataFromQQ(UnitTestBase,TestKDataBase):
     def test_data(self):
         super(TestKDataFromQQ,self).test_data(KDataFromQQ)
 

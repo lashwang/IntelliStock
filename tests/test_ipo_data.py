@@ -4,7 +4,7 @@ import requests
 from tests import *
 
 
-class MyTestCase(unittest.TestCase):
+class MyTestCase(UnitTestBase):
 
 
     @unittest.skip("test_html_extract skipping")
