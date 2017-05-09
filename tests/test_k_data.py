@@ -13,7 +13,7 @@ excel_helper = None
 
 def setUpModule():
     global excel_helper
-    excel_helper = ExcelHelper(get_excel_path('test_stock'))
+    excel_helper = ExcelHelper(get_excel_path('test_k_data'))
 
 def tearDownModule():
     global excel_helper

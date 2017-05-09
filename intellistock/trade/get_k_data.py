@@ -83,6 +83,7 @@ class KDataByDayBase(SpiderBase):
     def load_k_data(self):
         return self.df
 
+    @abc.abstractmethod
     def _on_parse_finished(self):
         pass
 
@@ -112,6 +113,15 @@ class KDataFromIFeng(KDataByDayBase):
         js = js['record']
         df = pd.DataFrame(js,columns=self.cls.DAY_PRICE_COLUMNS)
         self.df = self.df.append(df)
+
+    def _on_parse_finished(self):
+        df = self.df
+
+
+
+        self.df = df
+
+
 
     def __str__(self):
         str_format = "ifeng-{code}-{day_type}-{fq_type}"
@@ -154,6 +164,9 @@ class KDataFromQQ(KDataByDayBase):
         js = js[key[0]]
         df = pd.DataFrame(js)
         self.df = self.df.append(df)
+        pass
+
+    def _on_parse_finished(self):
         pass
 
 
