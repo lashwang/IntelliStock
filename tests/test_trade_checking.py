@@ -17,7 +17,7 @@ class MyTestCase(unittest2.TestCase):
             last_trade_day = stock_cal_day.get_last_trading_day(a.format('YYYY-MM-DD'))
             a = a.replace(days=+1)
             if a.year > 2017:
-                break;
+                break
 
 if __name__ == '__main__':
     unittest2.main()
