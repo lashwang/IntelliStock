@@ -91,7 +91,7 @@ class StockCalDay(SpiderBase):
         if mmdd is None:
             raise ValueError
 
-        return "{}-{}-{}".format(year,mmdd[0:2],mmdd[2:4])
+        return arrow.get("{}{}".format(year,mmdd),'YYYYMMDD')
 
 
     def get_cal_list(self):
