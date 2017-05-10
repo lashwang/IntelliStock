@@ -3,10 +3,10 @@
 
 
 import logging
-from datetime import datetime
-
 import numpy as np
 import pandas as pd
+import arrow
+
 
 logger = logging.getLogger(__name__)
 
@@ -52,23 +52,6 @@ def _type_compare(type1,type2):
     return type1.__name__ == type2.__name__
 
 
-def _normalise_colomn_format(_df,_header,_formator):
-    for _idx,_format in enumerate(_formator):
-        _key = _header[_idx]
-        if _type_compare(_format,datetime):
-            _df[_key] = pd.to_datetime(_df[_key], errors='coerce')
-            pass
-        elif _type_compare(_format,float) or _type_compare(_format,int):
-            _df[_key].replace(u'--',0,inplace=True)
-            _df[_key] = _df[_key].astype(np.str).str.replace(',','')
-            _df[_key] = pd.to_numeric(_df[_key])
-            _df[_key].fillna(0.0, inplace=True)
-
-            pass
-
-
-
-    return _df
 
 FORMAT_STOCK_CODE = lambda x:str(x).zfill(6)
 FORMAT = lambda x: '%.2f' % x
@@ -104,3 +87,15 @@ def get_stock_type(code):
         return u"上海"
 
     raise SyntaxError(code)
+
+
+def get_last_trade_date():
+    '''
+    1.获得当前的时间日期
+    2.如果是16点之前,则取上一交易日数据
+    3.如果是16点之后,则取当前交易日数据
+    :return: 日期时间
+    '''
+    now = arrow.now()
+
+
