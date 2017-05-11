@@ -233,6 +233,7 @@ class KDataFromQQ(KDataByDayBase):
         df = df.set_index(['date','code'])
         df = df.apply(pd.to_numeric)
         df['change'] = df['close'].diff(1)
+        df['change_rate'] = (df['close'].pct_change()*100).round(2)
         return df
 
     def _on_parse(self, data):
