@@ -35,18 +35,73 @@ class FQType(Enum):
     HFQ = 1
     NFQ = 2
 
+class KDataReq(object):
+
+
+    @property
+    def code(self):
+        return self.code
+
+    @code.setter
+    def code(self,code):
+        self.code = code
+
+    @property
+    def day_type(self):
+        return self.day_type
+
+    @day_type.setter
+    def day_type(self,day_type):
+        self.day_type = day_type
+
+    @property
+    def fq_type(self):
+        return self.fq_type
+
+    @fq_type.setter
+    def fq_type(self,fq_type):
+        self.fq_type = fq_type
+
+
+    @property
+    def date_from(self):
+        return self.date_from
+
+    @date_from.setter
+    def date_from(self,date_from = None):
+        if date_from is None:
+            date_from = '2014-01-01'
+
+        self.date_from = date_from
+
+        if is_date_format_invalid(date_from):
+            raise ValueError(date_from)
+
+    @property
+    def date_to(self):
+        return self.date_to
+
+    @date_to.setter
+    def date_to(self,date_to=None):
+        if date_to is None:
+            now = arrow.now()
+            if now.hour >= 16:
+                data_to = now.format('YYYY-MM-DD')
+            else:
+                data_to = now.replace(days=-1).format('YYYY-MM-DD')
+
+        self.date_to = data_to
+
+        if is_date_format_invalid(data_to):
+            raise ValueError(data_to)
+
+
+
+
 
 class KData(object):
-    def __init__(self,code = '',
-                 day_type = KDayType.DAY,
-                 fq_type = FQType.QFQ,
-                 date_from = None,
-                 date_to = None):
-        self.code = code
-        self.day_type = day_type
-        self.fq_type = fq_type
-        self.date_from = date_from
-        self.date_to = date_to
+    def __init__(self,k_date_req):
+        self.k_date_req = k_date_req
 
 
 
@@ -151,11 +206,12 @@ class KDataFromIFeng(KDataByDayBase):
 
 
 class KDataFromQQ(KDataByDayBase):
-    URL_FORMAT = "http://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?p=1&param={code},{k_type},{start_day},{end_day},{number},{fq}"
-
+    URL_FORMAT = "http://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?p=1&" \
+                 "param={code},{k_type},{start_day},{end_day},800,{fq}"
     DAY_TYPE = ['day', 'week', 'month']
-
     FQ_TYPE = ['qfq','hfq', '']
+    HEADER = ['date','open','close','high','low','volume','remarks','turnover']
+
 
     def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
         super(KDataFromQQ, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
@@ -168,8 +224,15 @@ class KDataFromQQ(KDataByDayBase):
                                             k_type=cls.DAY_TYPE[self.day_type.value],
                                             start_day=self.date_from,
                                             end_day=self.date_to,
-                                            number=600,
                                             fq=cls.FQ_TYPE[self.fq_type.value])
+
+    def _format(self,df):
+        df.columns = self.cls.HEADER
+        df.drop('remarks',axis=1, inplace=True)
+        df['code'] = self.code
+        df = df.set_index(['date','code'])
+        df = df.apply(pd.to_numeric)
+        return df
 
     def _on_parse(self, data):
         js = json.loads(data)
@@ -183,8 +246,9 @@ class KDataFromQQ(KDataByDayBase):
             raise ValueError("unknow response")
         js = js[key[0]]
         df = pd.DataFrame(js)
+        df = self._format(df)
         self.df = self.df.append(df)
-        pass
+
 
     def _on_parse_finished(self):
         pass

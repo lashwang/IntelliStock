@@ -89,13 +89,11 @@ def get_stock_type(code):
     raise SyntaxError(code)
 
 
-def get_last_trade_date():
-    '''
-    1.获得当前的时间日期
-    2.如果是16点之前,则取上一交易日数据
-    3.如果是16点之后,则取当前交易日数据
-    :return: 日期时间
-    '''
-    now = arrow.now()
 
+def is_date_format_invalid(date_str):
+    try:
+        arrow.get(date_str,'YYYY-MM-DD')
+    except Exception,error:
+        return True
 
+    return False

@@ -28,6 +28,11 @@ class MyTestCase(unittest2.TestCase):
                 break
 
 
+    def test_arrow(self):
+        try:
+            a = arrow.get('2017-0101', 'YYYY-MM-DD')
+        except Exception,error:
+            print error
 
 if __name__ == '__main__':
     unittest2.main()
