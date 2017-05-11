@@ -232,6 +232,7 @@ class KDataFromQQ(KDataByDayBase):
         df['code'] = self.code
         df = df.set_index(['date','code'])
         df = df.apply(pd.to_numeric)
+        df['change'] = df['close'].diff(1)
         return df
 
     def _on_parse(self, data):
