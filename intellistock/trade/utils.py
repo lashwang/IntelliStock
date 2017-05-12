@@ -72,6 +72,7 @@ def code_format(code):
     raise SyntaxError(code)
 
 
+
 def get_stock_type(code):
     code = to_str(code)
     if code[0:3] in SZ_START_CODE:
