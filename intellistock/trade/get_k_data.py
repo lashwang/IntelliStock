@@ -8,6 +8,8 @@ from enum import Enum
 
 from utils import *
 from intellistock.trade import *
+import arrow
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,63 +39,30 @@ class FQType(Enum):
 
 class KDataParam(object):
 
-
-    @property
-    def code(self):
-        return self.code
-
-    @code.setter
-    def code(self,code):
+    def __init__(self,code=''):
         self.code = code
+        self.init_default()
 
-    @property
-    def day_type(self):
-        return self.day_type
+    def init_default(self):
+        now = arrow.now()
+        if now.hour >= 16:
+            data_to = now.format('YYYY-MM-DD')
+        else:
+            data_to = now.replace(days=-1).format('YYYY-MM-DD')
 
-    @day_type.setter
-    def day_type(self,day_type):
-        self.day_type = day_type
-
-    @property
-    def fq_type(self):
-        return self.fq_type
-
-    @fq_type.setter
-    def fq_type(self,fq_type):
-        self.fq_type = fq_type
-
-
-    @property
-    def date_from(self):
-        return self.date_from
-
-    @date_from.setter
-    def date_from(self,date_from = None):
-        if date_from is None:
-            date_from = '2014-01-01'
-
-        self.date_from = date_from
-
-        if is_date_format_invalid(date_from):
-            raise ValueError(date_from)
-
-    @property
-    def date_to(self):
-        return self.date_to
-
-    @date_to.setter
-    def date_to(self,date_to=None):
-        if date_to is None:
-            now = arrow.now()
-            if now.hour >= 16:
-                data_to = now.format('YYYY-MM-DD')
-            else:
-                data_to = now.replace(days=-1).format('YYYY-MM-DD')
-
+        self.day_type = KDayType.DAY
+        self.fq_type = FQType.QFQ
+        self.date_from = '2004-01-01'
         self.date_to = data_to
 
-        if is_date_format_invalid(data_to):
-            raise ValueError(data_to)
+    def __str__(self):
+        str = "{code}-{day_type}-{fq_type}-{date_from}-{date_to}".\
+            format(code=self.code,
+            day_type=self.day_type.value,
+            fq_type=self.fq_type.value,
+            date_from=self.date_from.replace('-',''),
+            date_to=self.date_to.replace('-',''))
+        return str
 
 
 
@@ -109,13 +78,12 @@ class KData(object):
                            day_type=self.k_date_param.day_type,
                            fq_type=self.k_date_param.fq_type,
                            date_from=self.k_date_param.date_from,
-                           date_to=self.k_date_param.data_to)
+                           date_to=self.k_date_param.date_to)
         df = kdata_object.load_k_data()
         return df
 
-
-
-
+    def __str__(self):
+        return str(self.k_date_param)
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -226,6 +194,8 @@ class KDataFromQQ(KDataByDayBase):
         super(KDataFromQQ, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
         self.day_str = self.cls.DAY_TYPE[self.day_type.value]
         self.fq_str = self.cls.FQ_TYPE[self.fq_type.value]
+        self.last_min_data = ''
+
 
     def _get_url(self):
         cls = self.cls
@@ -237,8 +207,8 @@ class KDataFromQQ(KDataByDayBase):
                                             fq=cls.FQ_TYPE[self.fq_type.value])
 
     def _format(self,df):
-        df.columns = self.cls.HEADER
-        df.drop('remarks',axis=1, inplace=True)
+        df = df.drop_duplicates('date')
+        df = df.drop('remarks',axis=1)
         df.insert(1,'code',self.code)
         df['open'] = df['open'].astype(float)
         df['close'] = df['close'].astype(float)
@@ -248,6 +218,8 @@ class KDataFromQQ(KDataByDayBase):
         df['turnover'] = df['turnover'].astype(float)
         df['change'] = df['close'].diff(1)
         df['change_rate'] = (df['close'].pct_change()*100).round(2)
+        df = df[df['date'] >= self.date_from]
+        df = df.set_index('date')
         return df
 
     def _on_parse(self, data):
@@ -262,9 +234,25 @@ class KDataFromQQ(KDataByDayBase):
             raise ValueError("unknow response")
         js = js[key[0]]
         df = pd.DataFrame(js)
-        df = self._format(df)
+        df.columns = self.cls.HEADER
+        df = df.sort_values('date',ascending=False)
+        #df = self._format(df)
         self.df = self.df.append(df)
+        self.df = self.df.reset_index(drop=True)
+        min_date = str(df['date'].min())
 
+        if (min_date > self.date_from) and (self.last_min_data != min_date):
+            cls = self.cls
+            self.last_min_data = min_date
+            return cls.URL_FORMAT.format(code=self.code_format,
+                                            k_type=cls.DAY_TYPE[self.day_type.value],
+                                            start_day='',
+                                            end_day=min_date,
+                                            number=self.cls.PAGE_NUMBER,
+                                            fq=cls.FQ_TYPE[self.fq_type.value])
+
+        self.df = self.df.sort_values('date', ascending=True)
+        self.df = self._format(self.df)
 
 
 
