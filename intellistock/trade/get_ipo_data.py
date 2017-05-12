@@ -4,11 +4,11 @@ import json
 
 import pandas as pd
 from bs4 import BeautifulSoup
-
-
 from intellistock.trade import *
 from intellistock.trade.utils import *
 import traceback
+from intellistock.trade.get_k_data import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -58,11 +58,45 @@ class IPOData(object):
         '''
         name = u'股票类型'
         df_final[name] = df_final[IPOData.KEY_GPDM].map(lambda x:get_stock_type(x))
+        self.df = df_final
+        return self.df
 
-        # 设置index
-        df_final = df_final.set_index(IPOData.KEY_GPDM)
+    def get_calculated_ipo_data(self):
+        df = self.df
+        for index, row in df.iterrows():
+            param = KDataParam(row[0])
+            kdata = KData(param)
+            param.date_from = row[1]
+            param.fq_type = FQType.NFQ
+            df = kdata.get_k_data()
+            self.calculate_ipo_data(row,df)
 
-        return df_final
+
+
+    def calculate_ipo_data(self,ipo_row,k_data):
+        daily_limit_number = 0
+        high_price = 0
+        for index,k_row in k_data.iterrows():
+            if index == 0:
+                k_row['change'] = k_row['close'] - ipo_row[5]
+                k_row['change_rate'] = k_row['change']/ipo_row[5]
+                k_row['change_rate'] = round(k_row['change_rate']*100,2)
+                # 上市第一天
+                if round(k_row['change_rate'],0) >= 44:
+                    daily_limit_number = daily_limit_number + 1
+                    continue
+
+            # 计算涨停数
+            if (k_row['open'] == k_row['close'] == k_row['high'] == k_row['low']) \
+                    and (round(k_row['change_rate'],0) >= 10):
+                    daily_limit_number = daily_limit_number+1
+            else:
+                high_price = k_row['high']
+                break
+
+        return
+
+
 
     @staticmethod
     def parse_html(raw_html):
@@ -70,7 +104,8 @@ class IPOData(object):
 
     @staticmethod
     def format_stock_code(df):
-        df.loc[:, IPOData.KEY_GPDM] = df.loc[:, IPOData.KEY_GPDM].map(FORMAT_STOCK_CODE)
+        formated = df[IPOData.KEY_GPDM].map(FORMAT_STOCK_CODE)
+        df[IPOData.KEY_GPDM] = formated
         return df
 
 

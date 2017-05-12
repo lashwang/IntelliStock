@@ -219,7 +219,7 @@ class KDataFromQQ(KDataByDayBase):
         df['change'] = df['close'].diff(1)
         df['change_rate'] = (df['close'].pct_change()*100).round(2)
         df = df[df['date'] >= self.date_from]
-        df = df.set_index('date')
+        df = df.reset_index(drop=True)
         return df
 
     def _on_parse(self, data):
@@ -238,7 +238,6 @@ class KDataFromQQ(KDataByDayBase):
         df = df.sort_values('date',ascending=False)
         #df = self._format(df)
         self.df = self.df.append(df)
-        self.df = self.df.reset_index(drop=True)
         min_date = str(df['date'].min())
 
         if (min_date > self.date_from) and (self.last_min_data != min_date):

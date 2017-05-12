@@ -97,3 +97,7 @@ def is_date_format_invalid(date_str):
         return True
 
     return False
+
+
+def select_column_by_index(df,index):
+    return df[df.columns[index]]
