@@ -35,7 +35,7 @@ class FQType(Enum):
     HFQ = 1
     NFQ = 2
 
-class KDataReq(object):
+class KDataParam(object):
 
 
     @property
@@ -100,10 +100,18 @@ class KDataReq(object):
 
 
 class KData(object):
-    def __init__(self,k_date_req):
-        self.k_date_req = k_date_req
+    def __init__(self,k_date_param):
+        self.k_date_param = k_date_param
 
 
+    def get_k_data(self):
+        kdata_object = KDataFromQQ(code=self.k_date_param.code,
+                           day_type=self.k_date_param.day_type,
+                           fq_type=self.k_date_param.fq_type,
+                           date_from=self.k_date_param.date_from,
+                           date_to=self.k_date_param.data_to)
+        df = kdata_object.load_k_data()
+        return df
 
 
 
@@ -137,6 +145,7 @@ class KDataByDayBase(SpiderBase):
         self.date_from = date_from
         self.date_to = date_to
         self.code_format = code_format(code)
+        self.cache_timeout = 1
 
 
     def _get_start_url(self):
@@ -207,11 +216,11 @@ class KDataFromIFeng(KDataByDayBase):
 
 class KDataFromQQ(KDataByDayBase):
     URL_FORMAT = "http://proxy.finance.qq.com/ifzqgtimg/appstock/app/newfqkline/get?p=1&" \
-                 "param={code},{k_type},{start_day},{end_day},800,{fq}"
+                 "param={code},{k_type},{start_day},{end_day},{number},{fq}"
     DAY_TYPE = ['day', 'week', 'month']
     FQ_TYPE = ['qfq','hfq', '']
     HEADER = ['date','open','close','high','low','volume','remarks','turnover']
-
+    PAGE_NUMBER = 800
 
     def __init__(self, code='', day_type=KDayType.DAY, fq_type=FQType.QFQ, date_from='', date_to='', **kwargs):
         super(KDataFromQQ, self).__init__(code, day_type, fq_type, date_from, date_to, **kwargs)
@@ -224,14 +233,19 @@ class KDataFromQQ(KDataByDayBase):
                                             k_type=cls.DAY_TYPE[self.day_type.value],
                                             start_day=self.date_from,
                                             end_day=self.date_to,
+                                            number=self.cls.PAGE_NUMBER,
                                             fq=cls.FQ_TYPE[self.fq_type.value])
 
     def _format(self,df):
         df.columns = self.cls.HEADER
         df.drop('remarks',axis=1, inplace=True)
-        df['code'] = self.code
-        df = df.set_index(['date','code'])
-        df = df.apply(pd.to_numeric)
+        df.insert(1,'code',self.code)
+        df['open'] = df['open'].astype(float)
+        df['close'] = df['close'].astype(float)
+        df['high'] = df['high'].astype(float)
+        df['low'] = df['low'].astype(float)
+        df['volume'] = df['volume'].astype(float)
+        df['turnover'] = df['turnover'].astype(float)
         df['change'] = df['close'].diff(1)
         df['change_rate'] = (df['close'].pct_change()*100).round(2)
         return df
@@ -250,6 +264,10 @@ class KDataFromQQ(KDataByDayBase):
         df = pd.DataFrame(js)
         df = self._format(df)
         self.df = self.df.append(df)
+
+
+
+
 
 
     def _on_parse_finished(self):
