@@ -33,10 +33,6 @@ def get_output_folder():
 file_utils.mkdir(get_output_folder())
 
 
-def save_to_excel(df,file = "test.xlsx",label = "test"):
-    helper = ExcelHelper(get_excel_path(file))
-    helper.add(df,label=label)
-    helper.close()
 
 def get_excel_path(file="test.xlsx"):
     return os.path.join(get_output_folder(),file)
@@ -46,3 +42,4 @@ class UnitTestBase(unittest2.TestCase):
     def __init__(self, methodName='runTest'):
         super(UnitTestBase, self).__init__(methodName)
         os.environ["UNITTEST"] = str(True)
+        logging_config()

@@ -4,6 +4,17 @@ import requests
 from tests import *
 
 
+excel_helper = None
+
+def setUpModule():
+    global excel_helper
+    excel_helper = ExcelHelper(get_excel_path('test_ipo'))
+
+def tearDownModule():
+    global excel_helper
+    excel_helper.close()
+
+
 class MyTestCase(UnitTestBase):
 
 
@@ -21,9 +32,9 @@ class MyTestCase(UnitTestBase):
     def test_new_stock_data(self):
         ipo_data = IPOData(start_time='2017-04-01')
         df = ipo_data.get_df()
-        save_to_excel(df,file='test_ipo',label='IPOData_Raw')
+        excel_helper.add(df,label='IPOData_Raw')
         df = ipo_data.get_calculated_ipo_data()
-        save_to_excel(df, file='test_ipo', label='IPOData_Calc')
+        excel_helper.add(df,label='IPOData_Calc')
 
 
 if __name__ == '__main__':

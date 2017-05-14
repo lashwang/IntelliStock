@@ -217,7 +217,9 @@ class KDataFromQQ(KDataByDayBase):
         df['volume'] = df['volume'].astype(float)
         df['turnover'] = df['turnover'].astype(float)
         df['change'] = df['close'].diff(1)
-        df['change_rate'] = (df['close'].pct_change()*100).round(2)
+        df['change_rate'] = (df['close'].pct_change()*100)
+        if len(df) > 1:
+            df['change_rate'] = df['change_rate'].round(2)
         df = df[df['date'] >= self.date_from]
         df = df.reset_index(drop=True)
         return df

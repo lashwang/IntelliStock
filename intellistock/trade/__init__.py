@@ -8,8 +8,21 @@ from intellistock.http_cache import HttpCache
 from bs4 import BeautifulSoup
 import inspect
 import pandas as pd
+import sys
+
 
 logger = logging.getLogger(__name__)
+
+
+def logging_config():
+    logger = logging.getLogger()
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter(
+        '%(asctime)s [%(filename)s:%(lineno)s - %(funcName)s()] %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+
 
 
 def run(fun):

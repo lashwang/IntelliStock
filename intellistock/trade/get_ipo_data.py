@@ -62,17 +62,20 @@ class IPOData(object):
         return self.df
 
     def get_calculated_ipo_data(self):
-        df = self.df
-        for index, row in df.iterrows():
+        df_ipo = self.df
+        df_final = pd.DataFrame()
+
+        for index, row in df_ipo.iterrows():
             param = KDataParam(row[0])
             kdata = KData(param)
             param.date_from = row[1]
             param.fq_type = FQType.NFQ
-            df = kdata.get_k_data()
-            self.calculate_ipo_data(row,df)
+            df_kdata = kdata.get_k_data()
+            row_calced = self.calculate_ipo_data(row,df_kdata)
+            df_final = df_final.append(row_calced)
 
 
-        return df
+        return df_final
 
 
     def calculate_ipo_data(self,ipo_row,k_data):
@@ -105,6 +108,11 @@ class IPOData(object):
         ipo_row[u'涨停数'] = daily_limit_number
         ipo_row[u'破板价'] = high_price
 
+        if is_broken:
+            ipo_row[u'破板日换手率'] = k_row['turnover']
+            ipo_row[u'破板后最高价'] = k_data['high'].max()
+            ipo_row[u'破板后最低价'] = k_data[k_data['date'] >= k_row['date']].low.min()
+
         if code_format(k_row['code']).startswith('sh'):
             income = (high_price - ipo_row[5])*1000
         else:
@@ -120,8 +128,7 @@ class IPOData(object):
 
     @staticmethod
     def format_stock_code(df):
-        formated = df[IPOData.KEY_GPDM].map(FORMAT_STOCK_CODE)
-        df[IPOData.KEY_GPDM] = formated
+        df[IPOData.KEY_GPDM] = df[IPOData.KEY_GPDM].map(FORMAT_STOCK_CODE)
         return df
 
 
