@@ -113,7 +113,7 @@ class KDataByDayBase(SpiderBase):
         self.date_from = date_from
         self.date_to = date_to
         self.code_format = code_format(code)
-        self.cache_timeout = 1
+        self.cache_timeout = 1*24
 
 
     def _get_start_url(self):

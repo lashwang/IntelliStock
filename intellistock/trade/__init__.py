@@ -60,7 +60,7 @@ class SpiderBase(object):
         self.cls = self.__class__
         self.started = False
         self._cache = True
-        self._cache_timeout = None
+        self._cache_timeout_min = None
         self.df = pd.DataFrame()
 
     @abc.abstractmethod
@@ -91,19 +91,19 @@ class SpiderBase(object):
 
     @property
     def cache_timeout(self):
-        return self._cache_timeout
+        return self._cache_timeout_min
 
 
     @cache_timeout.setter
     def cache_timeout(self,value):
-        self._cache_timeout = value
+        self._cache_timeout_min = value
 
     @run_once
     def load_data(self):
         pass
 
     def _start(self):
-        logger.debug("_start,cache={},cache_timeout={}".format(self._cache,self._cache_timeout))
+        logger.debug("_start,cache={},cache_timeout={}".format(self._cache, self._cache_timeout_min))
         url = self._get_start_url()
         self.start_url = url
         for url in self._request(url):
@@ -116,7 +116,7 @@ class SpiderBase(object):
         logger.debug("Call request, url:{}".format(url))
         while True:
             self.current_url = url
-            data = HttpCache().Request(url, self._cache, self._cache_timeout)
+            data = HttpCache().Request(url, self._cache, self._cache_timeout_min)
             url = self._parse(data)
             if url is not None:
                 logger.debug("looping to the next url:{}".format(url))

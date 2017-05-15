@@ -25,9 +25,11 @@ class IPOData(object):
 
     def __init__(self,start_time = "2015-01-01"):
         self.start_time = start_time
-        self.df = pd.DataFrame()
+        self.df_raw = pd.DataFrame()
+        self.df_broken = pd.DataFrame()
+        self.df_unbroken = pd.DataFrame()
 
-    def get_df(self):
+    def _get_df_raw(self):
         ths1 = IPODataTHS1(self.start_time)
         ths1.load_data()
         code = ths1.get_last_code()
@@ -58,11 +60,10 @@ class IPOData(object):
         '''
         name = u'股票类型'
         df_final[name] = df_final[IPOData.KEY_GPDM].map(lambda x:get_stock_type(x))
-        self.df = df_final
-        return self.df
+        self.df_raw = df_final
 
-    def get_calculated_ipo_data(self):
-        df_ipo = self.df
+    def _get_calculated_ipo_data(self):
+        df_ipo = self.df_raw
         df_final = pd.DataFrame()
 
         for index, row in df_ipo.iterrows():
@@ -75,8 +76,11 @@ class IPOData(object):
             df_final = df_final.append(row_calced)
 
 
-        return df_final
+        self.df_broken = df_final[df_final.broken == True]
+        self.df_unbroken = df_final[df_final.broken == False]
 
+        self.df_broken = self.df_broken.drop('broken',axis=1)
+        self.df_unbroken = self.df_unbroken.drop('broken', axis=1)
 
     def calculate_ipo_data(self,ipo_row,k_data):
         daily_limit_number = 0
@@ -100,26 +104,33 @@ class IPOData(object):
                     and (round(k_row['change_rate'],0) >= 10):
                     daily_limit_number = daily_limit_number+1
             else:
-                ipo_row[u'破板日期'] = k_row['date']
+                ipo_row[u'broken_date'] = k_row['date']
                 is_broken = True
                 break
 
-        ipo_row[u'是否破板'] = is_broken
+        ipo_row[u'broken'] = is_broken
         ipo_row[u'涨停数'] = daily_limit_number
-        ipo_row[u'破板价'] = high_price
 
         if is_broken:
             ipo_row[u'破板日换手率'] = k_row['turnover']
             ipo_row[u'破板后最高价'] = k_data['high'].max()
             ipo_row[u'破板后最低价'] = k_data[k_data['date'] >= k_row['date']].low.min()
+            ipo_row[u'破板价'] = high_price
+            ipo_row[u'破板时流通市值'] = round(ipo_row[u'发行总数（万股）'] * high_price/10000,2)
+
+
 
         if code_format(k_row['code']).startswith('sh'):
             income = (high_price - ipo_row[5])*1000
         else:
             income = (high_price - ipo_row[5])*500
-        ipo_row[u'中签收益'] = income
+        ipo_row[u'中签收益(万)'] = income/10000
         return ipo_row
 
+
+    def load_data(self):
+        self._get_df_raw()
+        self._get_calculated_ipo_data()
 
 
     @staticmethod
