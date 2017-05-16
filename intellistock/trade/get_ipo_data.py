@@ -67,10 +67,10 @@ class IPOData(object):
 
         self.df_broken.sort_values('broken_date', ascending=False, inplace=True)
 
-        sorted_columns = ['broken_date','name','stock_type',u'上市日期',
-                          u'中一签收益(万)',u'发行价格',u'最新价',u'涨停数',
-                          u'破板之前总换手率',u'破板价',u'破板后最高最低价',
-                          u'破板日换手率',u'破板时流通市值',u'网上发行/发行总数',u'破板后5日走势']
+        sorted_columns = ['broken_date','name','stock_type',u'上市日期',u'涨停数',
+                          u'网上发行/发行总数',u'发行价格',u'破板价',u'中一签收益(万)',
+                          u'破板后最高最低价',u'破板时流通市值',u'最新价',
+                          u'破板日换手率',u'破板之前总换手率',u'破板后5日走势']
 
         if len(sorted_columns) != len(self.df_broken.columns):
             raise ValueError
@@ -121,7 +121,8 @@ class IPOData(object):
                 k_data_after_broken.low.min(),
                 round((k_data_after_broken.low.min()-high_price)/high_price*100,2)
             )
-            ipo_row[u'破板价'] = high_price
+            ipo_row[u'破板价'] = '{}({}%)'.format(high_price,
+                                               round((high_price-ipo_row.issue_price)/ipo_row.issue_price*100,2))
             ipo_row[u'破板时流通市值'] = round(ipo_row.issue_number_total * high_price/10000,2)
             ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close,k_data.iloc[-1].change_rate)
 
