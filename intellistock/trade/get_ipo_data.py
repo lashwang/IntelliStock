@@ -57,14 +57,27 @@ class IPOData(object):
             param.fq_type = FQType.NFQ
             df_kdata = kdata.get_k_data()
             row_calced = self.calculate_ipo_data(row,df_kdata)
-            df_final = df_final.append(row_calced)
+            broken = row_calced.broken
+            row_calced = row_calced.drop('broken')
+            if broken == True:
+                self.df_broken = self.df_broken.append(row_calced)
+            else:
+                self.df_unbroken = self.df_unbroken.append(row_calced)
+        #end for
+
+        self.df_broken.sort_values('broken_date', ascending=False, inplace=True)
+
+        sorted_columns = ['broken_date','name','stock_type',u'上市日期',
+                          u'中一签收益(万)',u'发行价格',u'最新价',u'涨停数',
+                          u'破板之前总换手率',u'破板价',u'破板后最高最低价',
+                          u'破板日换手率',u'破板时流通市值',u'网上发行/发行总数',u'破板后5日走势']
+
+        if len(sorted_columns) != len(self.df_broken.columns):
+            raise ValueError
+
+        self.df_broken = self.df_broken[sorted_columns]
 
 
-        self.df_broken = df_final[df_final.broken == True]
-        self.df_unbroken = df_final[df_final.broken == False]
-
-        self.df_broken = self.df_broken.drop('broken',axis=1)
-        self.df_unbroken = self.df_unbroken.drop('broken', axis=1)
 
     def calculate_ipo_data(self,ipo_row,k_data):
         daily_limit_number = 0
@@ -72,7 +85,6 @@ class IPOData(object):
         income = 0
         is_broken = False
         for index,k_row in k_data.iterrows():
-            high_price = k_row['high']
             if index == 0:
                 k_row['change'] = k_row['close'] - ipo_row.issue_price
                 k_row['change_rate'] = k_row['change']/ipo_row.issue_price
@@ -97,24 +109,29 @@ class IPOData(object):
         ipo_row[u'broken'] = is_broken
         ipo_row[u'涨停数'] = daily_limit_number
         ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close, k_data.iloc[-1].change_rate)
+        ipo_row[u'网上发行/发行总数'] = '{}/{}'.format(ipo_row.issue_number_online,ipo_row.issue_number_total)
 
         if is_broken:
             k_data_after_broken = k_data[k_data.date >= ipo_row.broken_date]
             ipo_row[u'破板日换手率'] = k_row['turnover']
             ipo_row[u'破板之前总换手率'] = k_data[k_data.date <= ipo_row.broken_date].turnover.sum()
-            ipo_row[u'破板后最高最低价'] = '{}/{}'.format(k_data_after_broken.high.max(),k_data_after_broken.low.min())
+            ipo_row[u'破板后最高最低价'] = '{}({}%)/{}({}%)'.format(
+                k_data_after_broken.high.max(),
+                round((k_data_after_broken.high.max()-high_price)/high_price*100,2),
+                k_data_after_broken.low.min(),
+                round((k_data_after_broken.low.min()-high_price)/high_price*100,2)
+            )
             ipo_row[u'破板价'] = high_price
             ipo_row[u'破板时流通市值'] = round(ipo_row.issue_number_total * high_price/10000,2)
             ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close,k_data.iloc[-1].change_rate)
 
-            def get_analysis_str(ipo_row,k_data):
+            def get_last_five_str(ipo_row,k_data):
                 last_five_close = list(k_data_after_broken.close[0:5])
                 last_five_change_rate = list(k_data_after_broken.change_rate[0:5])
-                last_five_turnover = list(k_data_after_broken.turnover[0:5])
                 str_list = map(lambda x,y:'{}({}%)'.format(x,y),last_five_close,last_five_change_rate)
                 return '/'.join(str_list)
 
-            ipo_row['analysis'] = get_analysis_str(ipo_row,k_data)
+            ipo_row[u'破板后5日走势'] = get_last_five_str(ipo_row,k_data)
 
 
 
@@ -122,7 +139,13 @@ class IPOData(object):
             income = (high_price - ipo_row.issue_price)*1000
         else:
             income = (high_price - ipo_row.issue_price)*500
-        ipo_row[u'中签收益(万)'] = income/10000
+        ipo_row[u'中一签收益(万)'] = income/10000
+        ipo_row = ipo_row.drop('issue_number_online')
+        ipo_row = ipo_row.drop('issue_number_total')
+        ipo_row[u'上市日期'] = ipo_row.list_date
+        ipo_row = ipo_row.drop('list_date')
+        ipo_row[u'发行价格'] = ipo_row.issue_price
+        ipo_row = ipo_row.drop('issue_price')
         return ipo_row
 
 
