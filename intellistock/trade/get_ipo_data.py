@@ -98,16 +98,19 @@ class IPOData(object):
         ipo_row[u'涨停数'] = daily_limit_number
 
         if is_broken:
+            k_data_after_broken = k_data[k_data.date >= ipo_row.broken_date]
             ipo_row[u'破板日换手率'] = k_row['turnover']
-            ipo_row[u'破板后最高价'] = k_data['high'].max()
-            ipo_row[u'破板后最低价'] = k_data[k_data['date'] >= k_row['date']].low.min()
+            ipo_row[u'破板之前总换手率'] = k_data[k_data.date <= ipo_row.broken_date].turnover.sum()
+            ipo_row[u'破板后最高最低价'] = '{}/{}'.format(k_data_after_broken.high.max(),k_data_after_broken.low.min())
             ipo_row[u'破板价'] = high_price
             ipo_row[u'破板时流通市值'] = round(ipo_row.issue_number_total * high_price/10000,2)
+            ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close,k_data.iloc[-1].change_rate)
+
             def get_analysis_str(ipo_row,k_data):
-                k_data_after_broken = k_data[k_data.date >= ipo_row.broken_date]
                 last_five_close = list(k_data_after_broken.close[0:5])
                 last_five_change_rate = list(k_data_after_broken.change_rate[0:5])
-                str_list = map(lambda x,y:'{}({})'.format(x,y),last_five_close,last_five_change_rate)
+                last_five_turnover = list(k_data_after_broken.turnover[0:5])
+                str_list = map(lambda x,y,z:'{}({}%,{}%)'.format(x,y,z),last_five_close,last_five_change_rate,last_five_turnover)
                 return '/'.join(str_list)
 
             ipo_row['analysis'] = get_analysis_str(ipo_row,k_data)
