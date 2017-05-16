@@ -91,6 +91,8 @@ class IPOData(object):
                 ipo_row[u'broken_date'] = k_row['date']
                 is_broken = True
                 break
+        # end for
+
 
         ipo_row[u'broken'] = is_broken
         ipo_row[u'涨停数'] = daily_limit_number
@@ -173,6 +175,9 @@ class IPODataTHS1(SpiderBase):
     def _on_parse_finished(self):
         df = self.df
         df = df[df.list_date >= self.start_time]
+        latest_date = get_last_valid_date()
+        df = df[df.list_date < latest_date]
+
         if df.list_date.min() < self.start_time:
             raise ValueError
         df= IPOData.format_stock_code(df)

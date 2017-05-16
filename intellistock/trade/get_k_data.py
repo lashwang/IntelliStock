@@ -44,16 +44,10 @@ class KDataParam(object):
         check_code_valid(code)
 
     def init_default(self):
-        now = arrow.now()
-        if now.hour >= 16:
-            data_to = now.format('YYYY-MM-DD')
-        else:
-            data_to = now.replace(days=-1).format('YYYY-MM-DD')
-
         self.day_type = KDayType.DAY
         self.fq_type = FQType.QFQ
         self.date_from = '2004-01-01'
-        self.date_to = data_to
+        self.date_to = get_last_valid_date()
 
     def __str__(self):
         str = "{code}-{day_type}-{fq_type}-{date_from}-{date_to}".\

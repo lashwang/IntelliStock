@@ -110,3 +110,17 @@ def check_code_valid(code):
         return
 
     raise ValueError()
+
+
+def get_last_valid_date():
+    '''
+    如果当天时间超过下午4点,返回当天日期,否则返回前一天日期
+    :return: 
+    '''
+    now = arrow.now()
+    if now.hour >= 16:
+        date = now.format('YYYY-MM-DD')
+    else:
+        date = now.replace(days=-1).format('YYYY-MM-DD')
+
+    return date
