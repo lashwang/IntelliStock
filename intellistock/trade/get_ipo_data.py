@@ -96,6 +96,7 @@ class IPOData(object):
 
         ipo_row[u'broken'] = is_broken
         ipo_row[u'涨停数'] = daily_limit_number
+        ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close, k_data.iloc[-1].change_rate)
 
         if is_broken:
             k_data_after_broken = k_data[k_data.date >= ipo_row.broken_date]
@@ -110,7 +111,7 @@ class IPOData(object):
                 last_five_close = list(k_data_after_broken.close[0:5])
                 last_five_change_rate = list(k_data_after_broken.change_rate[0:5])
                 last_five_turnover = list(k_data_after_broken.turnover[0:5])
-                str_list = map(lambda x,y,z:'{}({}%,{}%)'.format(x,y,z),last_five_close,last_five_change_rate,last_five_turnover)
+                str_list = map(lambda x,y:'{}({}%)'.format(x,y),last_five_close,last_five_change_rate)
                 return '/'.join(str_list)
 
             ipo_row['analysis'] = get_analysis_str(ipo_row,k_data)
@@ -191,7 +192,7 @@ class IPODataTHS1(SpiderBase):
 
         if df.list_date.min() < self.start_time:
             raise ValueError
-        df= IPOData.format_stock_code(df)
+        df= IPOData. format_stock_code(df)
         df.set_index('code',inplace=True)
         self.df = df
 
