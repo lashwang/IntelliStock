@@ -38,10 +38,10 @@ class FQType(Enum):
     NFQ = 2
 
 class KDataParam(object):
-
     def __init__(self,code=''):
         self.code = code
         self.init_default()
+        check_code_valid(code)
 
     def init_default(self):
         now = arrow.now()
@@ -63,6 +63,7 @@ class KDataParam(object):
             date_from=self.date_from.replace('-',''),
             date_to=self.date_to.replace('-',''))
         return str
+
 
 
 

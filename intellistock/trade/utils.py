@@ -85,7 +85,7 @@ def get_stock_type(code):
             return u'深圳创业板'
 
     if code[0:2] in SH_START_CODE:
-        return u"上海"
+        return u"上海主板"
 
     raise SyntaxError(code)
 
@@ -102,3 +102,11 @@ def is_date_format_invalid(date_str):
 
 def select_column_by_index(df,index):
     return df[df.columns[index]]
+
+
+
+def check_code_valid(code):
+    if code.startswith('00') or code.startswith('60') or code.startswith('30'):
+        return
+
+    raise ValueError()
