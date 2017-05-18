@@ -68,8 +68,8 @@ class IPOData(object):
         self.df_broken.sort_values('broken_date', ascending=False, inplace=True)
 
         sorted_columns = ['name','stock_type','broken_date',u'上市日期',u'涨停数',
-                          u'发行总数',u'发行价格',u'破板价',u'中一签收益(万)',
-                          u'破板时流通市值',u'最新价',
+                          u'发行总数',u'发行价格',u'破板价',u'最新价',u'中一签收益(万)',
+                          u'破板时流通市值',
                           u'破板日换手率',u'破板之前总换手率',u'破板后最高最低价',u'破板后5日走势']
 
         if len(sorted_columns) != len(self.df_broken.columns):
