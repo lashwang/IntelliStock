@@ -17,7 +17,6 @@ def tearDownModule():
 logger = logging.getLogger(__name__)
 
 class MyTestCase(unittest.TestCase):
-    @unittest.skip('skip')
     def test_k_data(self):
         code = stock_list[0]
         #df = ts.get_h_data(code)
