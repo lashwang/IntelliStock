@@ -32,10 +32,9 @@ class MyTestCase(UnitTestBase):
     def test_new_stock_data(self):
         ipo_data = IPOData(start_time='2017-01-01')
         ipo_data.load_data()
-        excel_helper.add(ipo_data.df_raw,label='ipo_raw')
         excel_helper.add(ipo_data.df_broken,label='ipo_broken')
         excel_helper.add(ipo_data.df_unbroken, label='ipo_unbroken')
-
+        excel_helper.add(ipo_data.df_raw,label='ipo_raw')
 
 if __name__ == '__main__':
     unittest2.main()

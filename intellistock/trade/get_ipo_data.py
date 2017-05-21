@@ -82,6 +82,7 @@ class IPOData(object):
     def calculate_ipo_data(self,ipo_row,k_data):
         daily_limit_number = 0
         high_price = 0
+        change_rate = 0
         income = 0
         is_broken = False
         for index,k_row in k_data.iterrows():
@@ -92,8 +93,11 @@ class IPOData(object):
                 # 上市第一天
                 if round(k_row['change_rate'],0) >= 44:
                     daily_limit_number = daily_limit_number + 1
+                    high_price = k_row['high']
+                    k_data.loc[index, 'change'] = k_row['change']
+                    k_data.loc[index,'change_rate'] = k_row['change_rate']
                     continue
-
+            # end if index == 0:
             high_price = k_row['high']
             # 计算涨停数
             if (k_row['open'] == k_row['close'] == k_row['high'] == k_row['low']) \
@@ -103,6 +107,7 @@ class IPOData(object):
                 ipo_row[u'broken_date'] = k_row['date']
                 is_broken = True
                 break
+            # end if
         # end for
 
 
