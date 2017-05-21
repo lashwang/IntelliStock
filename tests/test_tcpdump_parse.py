@@ -18,8 +18,8 @@ filename='./test_data/tcpdump.pcap'
 class MyTestCase(unittest2.TestCase):
     def test_something(self):
         df = pd.DataFrame()
-
-        for ts, pkt in dpkt.pcap.Reader(open(filename, 'r')):
+        conn = dict()  # Connections with current buffer
+        for ts, pkt in dpkt.pcap.Reader(open(filename, 'rb')):
             eth = dpkt.ethernet.Ethernet(pkt)
             if eth.type != dpkt.ethernet.ETH_TYPE_IP:
                 continue
@@ -41,11 +41,16 @@ class MyTestCase(unittest2.TestCase):
             time = arrow.get(ts).to('local').format('YYYY-MM-DD HH:mm:ss.SS')
             host = _request.headers['host']
             url = _request.uri
-            print 'ts:{}'.format(time)
-            print 'host:{}'.format(host)
-            print 'url:{}'.format(url)
+            #print 'ts:{}'.format(time)
+            #print 'host:{}'.format(host)
+            #print 'url:{}'.format(url)
+            df0 = pd.DataFrame({'ts':[time],'host':[host],'url':[url]})
+            df = df.append(df0)
+        # end for
 
+        df = df.set_index('ts')
 
+        excel_helper.add(df,'tcpdump')
 
         self.assertEqual(True, True)
 
