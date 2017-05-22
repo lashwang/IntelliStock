@@ -68,8 +68,8 @@ class IPOData(object):
         self.df_broken.sort_values('broken_date', ascending=False, inplace=True)
 
         sorted_columns = ['name','stock_type','broken_date',u'上市日期',u'涨停数',
-                          u'发行总数',u'发行价格',u'破板价',u'最新价',u'中一签收益(万)',
-                          u'破板时流通市值',
+                          u'发行总数',u'发行价格',u'破板价',u'中一签收益(万)',u'最新价',
+                          u'破板时流通市值',u'最新流通市值',
                           u'破板日换手率',u'破板之前总换手率',u'破板后最高最低价',u'破板后5日走势']
 
         if len(sorted_columns) != len(self.df_broken.columns):
@@ -115,7 +115,7 @@ class IPOData(object):
         ipo_row[u'涨停数'] = daily_limit_number
         ipo_row[u'最新价'] = '{}({}%)'.format(k_data.iloc[-1].close, k_data.iloc[-1].change_rate)
         ipo_row[u'发行总数'] = ipo_row.issue_number_total
-
+        ipo_row[u'最新流通市值'] = round(k_data.iloc[-1].close*ipo_row.issue_number_total/10000,2)
         if is_broken:
             k_data_after_broken = k_data[k_data.date >= ipo_row.broken_date]
             ipo_row[u'破板日换手率'] = k_row['turnover']
