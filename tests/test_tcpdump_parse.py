@@ -3,6 +3,8 @@ import dpkt
 import arrow
 from tests import *
 import pandas as pd
+import socket
+
 
 def setUpModule():
     global excel_helper
@@ -20,6 +22,8 @@ class MyTestCase(unittest2.TestCase):
         df = pd.DataFrame()
         conn = dict()  # Connections with current buffer
         for ts, pkt in dpkt.pcap.Reader(open(filename, 'rb')):
+            is_request = False
+            is_response = False
             eth = dpkt.ethernet.Ethernet(pkt)
             if eth.type != dpkt.ethernet.ETH_TYPE_IP:
                 continue
@@ -31,11 +35,22 @@ class MyTestCase(unittest2.TestCase):
 
             # Set the TCP data
             tcp = ip.data
+            f = {'src': socket.inet_ntoa(ip.src), 'sport': tcp.sport,
+                 'dst': socket.inet_ntoa(ip.dst), 'dport': tcp.dport}
+
 
             # Now see if we can parse the contents as a HTTP request
             try:
                 _request = dpkt.http.Request(tcp.data)
+                is_request = True
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
+                pass
+
+            try:
+                if not is_request:
+                    _response = dpkt.http.Response(tcp.data)
+                    is_response = True
+            except Exception:
                 continue
             # Print out the info
             time = arrow.get(ts).to('local').format('YYYY-MM-DD HH:mm:ss.SS')
