@@ -5,6 +5,8 @@ from tests import *
 import pandas as pd
 import socket
 import time
+from intellistock.pcap_parser import TcpConnTrack
+
 
 def setUpModule():
     global excel_helper
@@ -46,6 +48,12 @@ class HttpConnection(object):
 
 
 class MyTestCase(unittest2.TestCase):
+
+    def test_pcap_parser(self):
+        TcpConnTrack().parse_http_from_file(filename)
+
+
+    @unittest2.skip('skip')
     def test_something(self):
         df = pd.DataFrame()
         conn = dict()  # Connections with current buffer
@@ -60,6 +68,8 @@ class MyTestCase(unittest2.TestCase):
             ip = eth.data
             if not isinstance(ip.data, dpkt.tcp.TCP):
                 continue
+
+
 
             # Set the TCP data
             tcp = ip.data
