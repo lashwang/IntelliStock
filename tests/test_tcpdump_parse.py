@@ -4,7 +4,7 @@ import arrow
 from tests import *
 import pandas as pd
 import socket
-
+import time
 
 def setUpModule():
     global excel_helper
@@ -17,13 +17,34 @@ def tearDownModule():
 
 filename='./test_data/tcpdump.pcap'
 
+class Connection(object):
+    def __init__(self, data):
+        self.start = time.time()
+        self.data = data
+
+    def append(self, data):
+        self.data += data
+
+    def __len__(self):
+        return len(self.data)
+
+    def chronometer(self):
+        return (time.time() - self.start) * 1000
+
+
+class HttpConnection(object):
+    def __init__(self,request,response):
+        self.request = request
+        self.response = response
+
+
 class MyTestCase(unittest2.TestCase):
     def test_something(self):
         df = pd.DataFrame()
         conn = dict()  # Connections with current buffer
+        rere = dict()
+        http_conn = dict()
         for ts, pkt in dpkt.pcap.Reader(open(filename, 'rb')):
-            is_request = False
-            is_response = False
             eth = dpkt.ethernet.Ethernet(pkt)
             if eth.type != dpkt.ethernet.ETH_TYPE_IP:
                 continue
@@ -35,33 +56,43 @@ class MyTestCase(unittest2.TestCase):
 
             # Set the TCP data
             tcp = ip.data
-            f = {'src': socket.inet_ntoa(ip.src), 'sport': tcp.sport,
-                 'dst': socket.inet_ntoa(ip.dst), 'dport': tcp.dport}
-
+            saddr = socket.inet_ntoa(ip.src)
+            sport = tcp.sport
+            daddr = socket.inet_ntoa(ip.dst)
+            dport = tcp.dport
+            tupl = (saddr, sport, daddr, dport)
+            k = (daddr, dport,saddr, sport)
+            if tupl in conn:
+                conn[tupl].append(tcp.data)
+            else:
+                conn[tupl] = Connection(tcp.data)
 
             # Now see if we can parse the contents as a HTTP request
             try:
-                _request = dpkt.http.Request(tcp.data)
-                is_request = True
+                stream = conn[tupl].data
+                if stream[:4] == 'HTTP':
+                    http_response = dpkt.http.Response(stream)
+                    if k in rere:
+                        http_conn[k] = HttpConnection(rere[k],http_response)
+                        del rere[k]
+                else:
+                    http_request = dpkt.http.Request(tcp.data)
+                    rere[tupl] = http_request
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
-                pass
-
-            try:
-                if not is_request:
-                    _response = dpkt.http.Response(tcp.data)
-                    is_response = True
-            except Exception:
                 continue
-            # Print out the info
-            time = arrow.get(ts).to('local').format('YYYY-MM-DD HH:mm:ss.SS')
-            host = _request.headers['host']
-            url = _request.uri
-            #print 'ts:{}'.format(time)
-            #print 'host:{}'.format(host)
-            #print 'url:{}'.format(url)
-            df0 = pd.DataFrame({'ts':[time],'host':[host],'url':[url]})
-            df = df.append(df0)
         # end for
+
+        # # Print out the info
+        # time = arrow.get(ts).to('local').format('YYYY-MM-DD HH:mm:ss.SS')
+        # host = http_request.headers['host']
+        # url = http_request.uri
+        # #print 'ts:{}'.format(time)
+        # #print 'host:{}'.format(host)
+        # #print 'url:{}'.format(url)
+        # df0 = pd.DataFrame({'ts':[time],'host':[host],'url':[url]})
+        # df = df.append(df0)
+
+        print http_conn
 
         df = df.set_index('ts')
 
