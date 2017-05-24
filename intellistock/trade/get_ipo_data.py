@@ -286,12 +286,12 @@ class IPODataTHS2(SpiderBase):
         headers = [u'股票代码',u'股票简称',u'发行总数（万股）',u'网上发行（万股）',u'发行价格']
         headers_trans = ['code','name','issue_number_total','issue_number_online','issue_price']
 
-        df = self.df
+        df = pd.DataFrame(self.df)
         df = df[headers]
         df.rename(columns=lambda x: headers_trans[headers.index(x)], inplace=True)
         df = IPOData.format_stock_code(df)
         df.set_index('code',inplace=True)
-        self.df = df
+        self.df = pd.DataFrame(df)
 
 
 
