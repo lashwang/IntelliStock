@@ -33,9 +33,16 @@ class Connection(object):
 
 
 class HttpConnection(object):
-    def __init__(self,request,response):
+    def __init__(self,request,request_ts,response,response_ts):
         self.request = request
+        self.request_ts = request_ts
         self.response = response
+        self.response_ts = response_ts
+
+
+    def dump(self):
+        pass
+
 
 
 class MyTestCase(unittest2.TestCase):
@@ -73,11 +80,11 @@ class MyTestCase(unittest2.TestCase):
                 if stream[:4] == 'HTTP':
                     http_response = dpkt.http.Response(stream)
                     if k in rere:
-                        http_conn[k] = HttpConnection(rere[k],http_response)
+                        http_conn[k] = HttpConnection(rere[k][0],rere[k][1],http_response,ts)
                         del rere[k]
                 else:
                     http_request = dpkt.http.Request(tcp.data)
-                    rere[tupl] = http_request
+                    rere[tupl] = (http_request,ts)
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 continue
         # end for
@@ -91,12 +98,12 @@ class MyTestCase(unittest2.TestCase):
         # #print 'url:{}'.format(url)
         # df0 = pd.DataFrame({'ts':[time],'host':[host],'url':[url]})
         # df = df.append(df0)
+        # df = df.set_index('ts')
+        # excel_helper.add(df,'tcpdump')
 
         print http_conn
 
-        df = df.set_index('ts')
 
-        excel_helper.add(df,'tcpdump')
 
         self.assertEqual(True, True)
 
