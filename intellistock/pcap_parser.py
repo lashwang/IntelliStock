@@ -85,7 +85,7 @@ class TcpConnTrack(object):
                 if is_from_app:
                     self.conn[from_app_tag].rst = True
                 elif is_from_server:
-                    self.conn[from_app_tag].rst = True
+                    self.conn[from_server_tag].rst = True
                 continue
 
             if tcp.flags == dpkt.tcp.TH_ACK:
@@ -110,12 +110,16 @@ class TcpConnTrack(object):
                         self.conn[conn_key].http_data[curr_http_req] = [http_response]
                     else:
                         self.conn[conn_key].http_data[curr_http_req].append(http_response)
+
+                    self.conn[conn_key].tcp_server_data = ''
                 else:
                     http_request = dpkt.http.Request(tcp.data)
                     self.conn[conn_key].curr_http_req = http_request
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 continue
 
+        # end for
+        logger.debug(self.conn)
 
 
 
