@@ -47,7 +47,7 @@ class HttpConnection(object):
 
 
 
-class MyTestCase(unittest2.TestCase):
+class MyTestCase(UnitTestBase):
 
     def test_pcap_parser(self):
         TcpConnTrack().parse_http_from_file(filename)
@@ -119,4 +119,5 @@ class MyTestCase(unittest2.TestCase):
 
 
 if __name__ == '__main__':
+    logging_config()
     unittest2.main()

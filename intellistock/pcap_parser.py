@@ -97,10 +97,12 @@ class TcpConnTrack(object):
 
             if is_from_server:
                 self.conn[conn_key].tcp_server_data += tcp.data
-
+                logger.debug('find from server data:' + str(conn_key))
             try:
                 stream = self.conn[conn_key].tcp_server_data
+
                 if stream[:4] == 'HTTP':
+                    logger.debug('find from server http data:' + str(conn_key))
                     http_response = dpkt.http.Response(stream)
                     curr_http_req = self.conn[conn_key].curr_http_req
                     if curr_http_req is None:

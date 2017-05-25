@@ -42,4 +42,4 @@ class UnitTestBase(unittest2.TestCase):
     def __init__(self, methodName='runTest'):
         super(UnitTestBase, self).__init__(methodName)
         os.environ["UNITTEST"] = str(True)
-        logging_config()
+
