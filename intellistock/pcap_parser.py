@@ -76,16 +76,23 @@ class TcpConnTrack(object):
 
             if self.is_fin_flag(tcp):
                 if is_from_app:
-                    self.conn[from_app_tag].app_fin = True
+                    self.conn[conn_key].app_fin = True
                 elif is_from_server:
-                    self.conn[from_server_tag].server_fin = True
+                    self.conn[conn_key].server_fin = True
+
+                if self.conn[conn_key].app_fin == True and self.conn[conn_key].server_fin == True:
+                    if not self.conn[conn_key].is_http:
+                        del self.conn[conn_key]
                 continue
 
             if self.is_rst_flag(tcp):
                 if is_from_app:
-                    self.conn[from_app_tag].rst = True
+                    self.conn[conn_key].rst = True
                 elif is_from_server:
-                    self.conn[from_server_tag].rst = True
+                    self.conn[conn_key].rst = True
+
+                if conn_key in self.conn and not self.conn[conn_key].is_http:
+                    del self.conn[conn_key]
                 continue
 
             if tcp.flags == dpkt.tcp.TH_ACK:
@@ -118,6 +125,7 @@ class TcpConnTrack(object):
                 else:
                     http_request = dpkt.http.Request(tcp.data)
                     self.conn[conn_key].curr_http_req = http_request
+                    self.conn[conn_key].is_http = True
                     logger.debug('find http request for ' + str(conn_key))
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 continue
@@ -138,4 +146,5 @@ class Connection(object):
         self.tcp_server_data = ''
         self.http_data = dict()
         self.curr_http_req = None
+        self.is_http = False
 
