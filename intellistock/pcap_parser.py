@@ -112,14 +112,16 @@ class TcpConnTrack(object):
                         self.conn[conn_key].http_data[curr_http_req].append(http_response)
 
                     self.conn[conn_key].tcp_server_data = ''
+                    logger.debug('find http response for ' + str(conn_key))
                 else:
                     http_request = dpkt.http.Request(tcp.data)
                     self.conn[conn_key].curr_http_req = http_request
+                    logger.debug('find http request for ' + str(conn_key))
             except (dpkt.dpkt.NeedData, dpkt.dpkt.UnpackError):
                 continue
 
         # end for
-        logger.debug(self.conn)
+
 
 
 
